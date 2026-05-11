@@ -13,9 +13,12 @@ export default function AnnouncementCard() {
             href="https://www.instagram.com/nishkigram/"
             target="_blank"
             rel="noopener noreferrer"
-            className="px-10 py-3.5 bg-[#fdfaf6] text-[#5c4a3d] text-lg font-semibold rounded-full shadow-md hover:shadow-lg transition-all border border-[#5c4a3d]/15 hover:bg-[#5c4a3d] hover:text-[#fdfaf6]"
+            className="inline-flex items-center gap-3 rounded-lg bg-[#5c4a3d] px-8 py-4 text-lg font-semibold text-[#fdfaf6] shadow-lg shadow-[#5c4a3d]/20 transition-all hover:-translate-y-0.5 hover:bg-[#47382f] hover:shadow-xl focus:outline-none focus:ring-4 focus:ring-[#5c4a3d]/20"
           >
-            Posetite instagram stranicu!
+            <span className="flex h-8 w-8 items-center justify-center rounded-md bg-[#fdfaf6]/15 text-xl">
+              @
+            </span>
+            Posetite Instagram
           </a>
         </div>
       </div>

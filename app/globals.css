@@ -19,3 +19,57 @@ body {
   font-family: Arial, Helvetica, sans-serif;
   overflow-x: hidden;
 }
+
+.blog-post-content h2 {
+  margin-top: 2.5rem;
+  margin-bottom: 1rem;
+  font-family: var(--font-playfair);
+  font-size: clamp(2rem, 4vw, 2.75rem);
+  line-height: 1.15;
+  color: #4a382b;
+}
+
+.blog-post-content h3 {
+  margin-top: 2rem;
+  margin-bottom: 0.75rem;
+  font-family: var(--font-playfair);
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  line-height: 1.2;
+  color: #4a382b;
+}
+
+.blog-post-content p {
+  margin-bottom: 1.25rem;
+}
+
+.blog-post-content ul,
+.blog-post-content ol {
+  margin: 1.25rem 0 1.75rem 1.5rem;
+}
+
+.blog-post-content ul {
+  list-style: disc;
+}
+
+.blog-post-content ol {
+  list-style: decimal;
+}
+
+.blog-post-content li {
+  margin-bottom: 0.5rem;
+}
+
+.blog-post-content a {
+  font-weight: 700;
+  color: #5c4a3d;
+  text-decoration: underline;
+  text-underline-offset: 0.25em;
+}
+
+.blog-post-content img {
+  margin: 2rem 0;
+  max-height: 520px;
+  width: 100%;
+  border-radius: 1.25rem;
+  object-fit: cover;
+}

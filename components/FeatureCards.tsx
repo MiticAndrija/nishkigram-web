@@ -1,32 +1,40 @@
 import Image from "next/image";
+import Link from "next/link";
 
 const features = [
   {
+    id: "o-nama",
     title: "O Nama",
     description: "Otkrijte više o nama i našoj misiji.",
     linkText: "Saznajte više",
-    image: "/window.svg", // Using placeholder
+    href: "/o-nama",
+    image: "/window.svg",
   },
   {
+    id: "blog",
     title: "Blog",
     description: "Najnovije vesti, priče i događaji iz Niša.",
     linkText: "Posetite blog",
-    image: "/globe.svg", // Using placeholder
+    href: "/blog",
+    image: "/globe.svg",
   },
   {
+    id: "shop",
     title: "Shop",
     description: "Dostupni proizvodi sa motivima Niša.",
     linkText: "Istražite prodavnicu",
-    image: "/file.svg", // Using placeholder
+    href: "/shop",
+    image: "/file.svg",
   },
 ];
 
 export default function FeatureCards() {
   return (
     <div className="w-full max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8 mb-24 px-4">
-      {features.map((feature, i) => (
+      {features.map((feature) => (
         <div
-          key={i}
+          key={feature.id}
+          id={feature.id}
           className="bg-[#fdfaf6] rounded-[2rem] overflow-hidden shadow-lg hover:shadow-xl transition-shadow border border-[#5c4a3d]/10 flex flex-col"
         >
           <div className="h-56 relative bg-[#e8e0d5] flex items-center justify-center p-8">
@@ -45,8 +53,8 @@ export default function FeatureCards() {
             <p className="text-[#5c4a3d]/80 mb-6 flex-grow text-lg">
               {feature.description}
             </p>
-            <a
-              href="#"
+            <Link
+              href={feature.href}
               className="text-[#5c4a3d] font-semibold hover:underline flex items-center gap-2"
             >
               {feature.linkText}
@@ -63,7 +71,7 @@ export default function FeatureCards() {
                   d="M9 5l7 7-7 7"
                 />
               </svg>
-            </a>
+            </Link>
           </div>
         </div>
       ))}
