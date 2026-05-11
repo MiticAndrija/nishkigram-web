@@ -6,13 +6,28 @@ import type { BlogPost } from "@/lib/blog";
 
 type AdminBlogManagerProps = {
   initialPosts: BlogPost[];
+  initialCategories: string[];
 };
 
-export default function AdminBlogManager({ initialPosts }: AdminBlogManagerProps) {
+type CategoriesResponse = {
+  categories?: string[];
+  error?: string;
+};
+
+export default function AdminBlogManager({
+  initialPosts,
+  initialCategories,
+}: AdminBlogManagerProps) {
   const [posts, setPosts] = useState(initialPosts);
+  const [categories, setCategories] = useState(initialCategories);
+  const [newCategory, setNewCategory] = useState("");
   const [editingPost, setEditingPost] = useState<BlogPost | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+  const [categoryStatus, setCategoryStatus] = useState<
+    "idle" | "saving" | "error"
+  >("idle");
+  const [categoryMessage, setCategoryMessage] = useState("");
 
   const refreshPosts = async () => {
     setIsLoading(true);
@@ -62,14 +77,130 @@ export default function AdminBlogManager({ initialPosts }: AdminBlogManagerProps
     await refreshPosts();
   };
 
+  const addCategory = async () => {
+    setCategoryStatus("saving");
+    setCategoryMessage("");
+
+    const response = await fetch("/api/admin/blog/categories", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ category: newCategory }),
+    });
+    const payload = (await response.json()) as CategoriesResponse;
+
+    if (!response.ok || !payload.categories) {
+      setCategoryStatus("error");
+      setCategoryMessage(payload.error || "Dodavanje kategorije nije uspelo.");
+      return;
+    }
+
+    setCategories(payload.categories);
+    setNewCategory("");
+    setCategoryStatus("idle");
+    setCategoryMessage("Kategorija je dodata.");
+  };
+
+  const deleteCategory = async (category: string) => {
+    if (
+      !window.confirm(
+        `Obrisati kategoriju "${category}" iz liste? Postovi koji je vec koriste nece biti obrisani.`,
+      )
+    ) {
+      return;
+    }
+
+    setCategoryStatus("saving");
+    setCategoryMessage("");
+
+    const response = await fetch("/api/admin/blog/categories", {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ category }),
+    });
+    const payload = (await response.json()) as CategoriesResponse;
+
+    if (!response.ok || !payload.categories) {
+      setCategoryStatus("error");
+      setCategoryMessage(payload.error || "Brisanje kategorije nije uspelo.");
+      return;
+    }
+
+    setCategories(payload.categories);
+    setCategoryStatus("idle");
+    setCategoryMessage("Kategorija je obrisana iz liste.");
+  };
+
   return (
     <div className="grid gap-10">
       <BlogForm
         key={editingPost?.id ?? "new-post"}
         post={editingPost}
+        categories={categories}
         onSaved={refreshPosts}
         onCancelEdit={() => setEditingPost(null)}
       />
+
+      <section className="rounded-[1.5rem] border border-[#5c4a3d]/10 bg-[#fdfaf6] p-6">
+        <div className="flex flex-col justify-between gap-4 md:flex-row md:items-end">
+          <div>
+            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#8b6f56]">
+              Kategorije
+            </p>
+            <h2 className="mt-2 font-serif text-3xl text-[#4a382b]">
+              Blog kategorije
+            </h2>
+          </div>
+          <div className="flex flex-col gap-3 sm:flex-row">
+            <input
+              value={newCategory}
+              onChange={(event) => setNewCategory(event.target.value)}
+              placeholder="Nova kategorija"
+              className="rounded-lg border border-[#5c4a3d]/20 bg-[#f4efe6] px-4 py-3 text-[#4a382b] outline-none focus:ring-4 focus:ring-[#5c4a3d]/15"
+            />
+            <button
+              type="button"
+              onClick={addCategory}
+              disabled={categoryStatus === "saving"}
+              className="rounded-lg bg-[#5c4a3d] px-5 py-3 font-semibold text-[#fdfaf6] transition-colors hover:bg-[#47382f] disabled:opacity-60"
+            >
+              Dodaj
+            </button>
+          </div>
+        </div>
+
+        {categoryMessage ? (
+          <p
+            className={`mt-4 font-semibold ${
+              categoryStatus === "error" ? "text-red-700" : "text-green-800"
+            }`}
+          >
+            {categoryMessage}
+          </p>
+        ) : null}
+
+        <div className="mt-5 flex flex-wrap gap-2">
+          {categories.length > 0 ? (
+            categories.map((category) => (
+              <span
+                key={category}
+                className="inline-flex items-center gap-2 rounded-full border border-[#5c4a3d]/20 bg-[#f4efe6] px-3 py-2 text-sm font-semibold text-[#5c4a3d]"
+              >
+                {category}
+                <button
+                  type="button"
+                  onClick={() => deleteCategory(category)}
+                  className="rounded-full px-2 text-red-800 transition-colors hover:bg-red-900/10"
+                  aria-label={`Obrisi kategoriju ${category}`}
+                >
+                  x
+                </button>
+              </span>
+            ))
+          ) : (
+            <p className="text-[#5c4a3d]/75">Nema definisanih kategorija.</p>
+          )}
+        </div>
+      </section>
 
       <section className="rounded-[1.5rem] border border-[#5c4a3d]/10 bg-[#fdfaf6] p-6">
         <div className="flex flex-col justify-between gap-4 md:flex-row md:items-end">

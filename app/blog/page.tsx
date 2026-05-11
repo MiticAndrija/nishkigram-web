@@ -1,12 +1,14 @@
 import Link from "next/link";
-import BlogCard from "@/components/BlogCard";
+import BlogSearch from "@/components/BlogSearch";
 import Navbar from "@/components/Navbar";
 import { getPublishedPosts } from "@/lib/blog";
+import { getBlogCategories } from "@/lib/blogCategories";
 
 export const dynamic = "force-dynamic";
 
 export default async function BlogPage() {
   const posts = await getPublishedPosts();
+  const categories = await getBlogCategories();
 
   return (
     <div className="min-h-screen bg-[#f4efe6] font-sans selection:bg-[#5c4a3d]/20">
@@ -36,11 +38,7 @@ export default async function BlogPage() {
             </div>
 
             {posts.length > 0 ? (
-              <div className="mt-12 grid gap-7 md:grid-cols-2 lg:grid-cols-3">
-                {posts.map((post) => (
-                  <BlogCard key={post.id} post={post} />
-                ))}
-              </div>
+              <BlogSearch posts={posts} categories={categories} />
             ) : (
               <div className="mt-12 rounded-[1.5rem] border border-[#5c4a3d]/10 bg-[#fdfaf6] p-10 text-center">
                 <h2 className="font-serif text-3xl text-[#4a382b]">

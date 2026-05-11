@@ -1,1 +1,14 @@
-[]
+[
+  {
+    "id": "710e24a8-cab8-4a5f-b753-bcdaea9c6b86",
+    "title": "naslov",
+    "slug": "n",
+    "excerpt": "dkfhgsdfkjhg",
+    "author": "Niškigram",
+    "coverImage": "/images/nis-hero.png",
+    "contentHtml": "kshdgfhksdgfdskhgfsdkghf<p></p>",
+    "published": true,
+    "createdAt": "2026-05-11T11:24:24.299Z",
+    "updatedAt": "2026-05-11T11:24:53.491Z"
+  }
+]

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { ChangeEvent, useEffect, useRef, useState } from "react";
 
 type BlogEditorProps = {
   value: string;
@@ -17,8 +17,23 @@ const toolbarButtons = [
   { label: "OL", title: "Numbered list", command: "insertOrderedList" },
 ];
 
+const maxUploadSizeBytes = 5 * 1024 * 1024;
+const imageAccept = ".jpg,.jpeg,.png,.webp";
+
+type UploadResponse = {
+  upload?: {
+    url: string;
+  };
+  error?: string;
+};
+
 export default function BlogEditor({ value, onChange }: BlogEditorProps) {
   const editorRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [uploadStatus, setUploadStatus] = useState<
+    "idle" | "uploading" | "success" | "error"
+  >("idle");
+  const [uploadMessage, setUploadMessage] = useState("");
 
   useEffect(() => {
     if (editorRef.current && editorRef.current.innerHTML !== value) {
@@ -48,6 +63,45 @@ export default function BlogEditor({ value, onChange }: BlogEditorProps) {
     }
   };
 
+  const uploadImage = async (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+
+    if (!file) {
+      return;
+    }
+
+    setUploadStatus("uploading");
+    setUploadMessage("");
+
+    if (file.size > maxUploadSizeBytes) {
+      setUploadStatus("error");
+      setUploadMessage("Slika moze biti velika najvise 5 MB.");
+      event.target.value = "";
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("image", file);
+
+    const response = await fetch("/api/admin/blog/upload", {
+      method: "POST",
+      body: formData,
+    });
+    const payload = (await response.json()) as UploadResponse;
+
+    if (!response.ok || !payload.upload?.url) {
+      setUploadStatus("error");
+      setUploadMessage(payload.error || "Upload slike nije uspeo.");
+      event.target.value = "";
+      return;
+    }
+
+    runCommand("insertImage", payload.upload.url);
+    setUploadStatus("success");
+    setUploadMessage("Slika je ubacena u tekst.");
+    event.target.value = "";
+  };
+
   return (
     <div className="overflow-hidden rounded-lg border border-[#5c4a3d]/20 bg-[#fdfaf6]">
       <div className="flex flex-wrap gap-2 border-b border-[#5c4a3d]/10 p-3">
@@ -74,9 +128,32 @@ export default function BlogEditor({ value, onChange }: BlogEditorProps) {
           onClick={addImage}
           className="h-9 rounded-md border border-[#5c4a3d]/15 px-3 text-sm font-semibold text-[#5c4a3d] transition-colors hover:bg-[#5c4a3d]/8"
         >
-          Slika
+          URL slika
         </button>
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept={imageAccept}
+          onChange={uploadImage}
+          className="sr-only"
+          id="content-image-upload"
+        />
+        <label
+          htmlFor="content-image-upload"
+          className="flex h-9 cursor-pointer items-center rounded-md border border-[#5c4a3d]/15 px-3 text-sm font-semibold text-[#5c4a3d] transition-colors hover:bg-[#5c4a3d]/8"
+        >
+          Upload slika
+        </label>
       </div>
+      {uploadStatus !== "idle" ? (
+        <p
+          className={`border-b border-[#5c4a3d]/10 px-5 py-2 text-sm font-semibold ${
+            uploadStatus === "error" ? "text-red-700" : "text-[#5c4a3d]"
+          }`}
+        >
+          {uploadStatus === "uploading" ? "Uploadujem sliku..." : uploadMessage}
+        </p>
+      ) : null}
       <div
         ref={editorRef}
         contentEditable

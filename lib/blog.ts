@@ -1,5 +1,8 @@
 import { promises as fs } from "node:fs";
 import path from "node:path";
+import { getBlogCategories } from "@/lib/blogCategories";
+import { removeUnusedBlogUploads } from "@/lib/blogUploads";
+import { normalizeCategory, normalizeTags } from "@/lib/blogMeta";
 import { sanitizeHtml } from "@/lib/sanitizeHtml";
 
 export type BlogPost = {
@@ -8,6 +11,8 @@ export type BlogPost = {
   slug: string;
   excerpt: string;
   author: string;
+  category?: string;
+  tags?: string[];
   coverImage: string;
   contentHtml: string;
   published: boolean;
@@ -20,6 +25,8 @@ export type BlogPostInput = {
   slug?: string;
   excerpt: string;
   author: string;
+  category?: string;
+  tags?: string[];
   coverImage: string;
   contentHtml: string;
   published: boolean;
@@ -98,6 +105,7 @@ async function writePosts(posts: BlogPost[]) {
 
 export async function createPost(input: BlogPostInput) {
   const posts = await getAllPosts();
+  const categories = await getBlogCategories();
   const now = new Date().toISOString();
   const slug = uniqueSlug(slugify(input.slug || input.title), posts);
 
@@ -107,6 +115,8 @@ export async function createPost(input: BlogPostInput) {
     slug,
     excerpt: input.excerpt.trim(),
     author: input.author.trim(),
+    category: normalizeCategory(input.category, categories),
+    tags: normalizeTags(input.tags),
     coverImage: input.coverImage.trim() || "/images/nis-hero.png",
     contentHtml: sanitizeHtml(input.contentHtml),
     published: input.published,
@@ -120,6 +130,7 @@ export async function createPost(input: BlogPostInput) {
 
 export async function updatePost(id: string, input: BlogPostInput) {
   const posts = await getAllPosts();
+  const categories = await getBlogCategories();
   const existing = posts.find((post) => post.id === id);
 
   if (!existing) {
@@ -127,12 +138,17 @@ export async function updatePost(id: string, input: BlogPostInput) {
   }
 
   const slug = uniqueSlug(slugify(input.slug || input.title), posts, id);
+  const categoryOptions = existing.category
+    ? [existing.category, ...categories]
+    : categories;
   const updatedPost: BlogPost = {
     ...existing,
     title: input.title.trim(),
     slug,
     excerpt: input.excerpt.trim(),
     author: input.author.trim(),
+    category: normalizeCategory(input.category, categoryOptions),
+    tags: normalizeTags(input.tags),
     coverImage: input.coverImage.trim() || "/images/nis-hero.png",
     contentHtml: sanitizeHtml(input.contentHtml),
     published: input.published,
@@ -145,6 +161,7 @@ export async function updatePost(id: string, input: BlogPostInput) {
 
 export async function deletePost(id: string) {
   const posts = await getAllPosts();
+  const deletedPost = posts.find((post) => post.id === id);
   const nextPosts = posts.filter((post) => post.id !== id);
 
   if (nextPosts.length === posts.length) {
@@ -152,5 +169,14 @@ export async function deletePost(id: string) {
   }
 
   await writePosts(nextPosts);
+
+  if (deletedPost) {
+    try {
+      await removeUnusedBlogUploads(deletedPost, nextPosts);
+    } catch (error) {
+      console.warn("Blog post deleted, but uploaded image cleanup failed.", error);
+    }
+  }
+
   return true;
 }

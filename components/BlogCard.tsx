@@ -1,3 +1,5 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
 import type { BlogPost } from "@/lib/blog";
@@ -23,10 +25,30 @@ export default function BlogCard({ post }: { post: BlogPost }) {
           fill
           sizes="(min-width: 768px) 33vw, 100vw"
           className="object-cover object-bottom transition-transform duration-500 group-hover:scale-105"
-          unoptimized={post.coverImage.startsWith("/images/")}
+          unoptimized={
+            post.coverImage.startsWith("/images/") ||
+            post.coverImage.startsWith("/uploads/blog/")
+          }
         />
       </div>
       <div className="p-7">
+        {post.category || post.tags?.length ? (
+          <div className="mb-4 flex flex-wrap gap-2">
+            {post.category ? (
+              <span className="rounded-full bg-[#5c4a3d] px-3 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-[#fdfaf6]">
+                {post.category}
+              </span>
+            ) : null}
+            {post.tags?.slice(0, 3).map((tag) => (
+              <span
+                key={tag}
+                className="rounded-full border border-[#5c4a3d]/20 px-3 py-1 text-xs font-semibold text-[#5c4a3d]"
+              >
+                #{tag}
+              </span>
+            ))}
+          </div>
+        ) : null}
         <div className="mb-4 flex flex-wrap items-center gap-3 text-sm font-semibold text-[#5c4a3d]/65">
           <span>{post.author}</span>
           <span aria-hidden="true">/</span>

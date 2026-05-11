@@ -48,6 +48,23 @@ export default async function BlogPostPage({
                 <span aria-hidden="true">/</span>
                 <time dateTime={post.createdAt}>{formatDate(post.createdAt)}</time>
               </div>
+              {post.category || post.tags?.length ? (
+                <div className="mt-5 flex flex-wrap justify-center gap-2">
+                  {post.category ? (
+                    <span className="rounded-full bg-[#5c4a3d] px-3 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-[#fdfaf6]">
+                      {post.category}
+                    </span>
+                  ) : null}
+                  {post.tags?.map((tag) => (
+                    <span
+                      key={tag}
+                      className="rounded-full border border-[#5c4a3d]/20 px-3 py-1 text-xs font-semibold text-[#5c4a3d]"
+                    >
+                      #{tag}
+                    </span>
+                  ))}
+                </div>
+              ) : null}
               <p className="mx-auto mt-8 max-w-2xl text-xl leading-9 text-[#5c4a3d]/80">
                 {post.excerpt}
               </p>
@@ -63,7 +80,10 @@ export default async function BlogPostPage({
                 sizes="100vw"
                 className="object-cover object-bottom"
                 priority
-                unoptimized={post.coverImage.startsWith("/images/")}
+                unoptimized={
+                  post.coverImage.startsWith("/images/") ||
+                  post.coverImage.startsWith("/uploads/blog/")
+                }
               />
             </div>
           </div>

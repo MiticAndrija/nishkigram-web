@@ -1,12 +1,14 @@
 "use client";
 
-import { FormEvent, useMemo, useState } from "react";
+import { ChangeEvent, FormEvent, useMemo, useRef, useState } from "react";
 import BlogEditor from "@/components/BlogEditor";
 import BlogPostContent from "@/components/BlogPostContent";
 import type { BlogPost, BlogPostInput } from "@/lib/blog";
+import { normalizeTags } from "@/lib/blogMeta";
 
 type BlogFormProps = {
   post?: BlogPost | null;
+  categories: string[];
   onSaved: () => void;
   onCancelEdit: () => void;
 };
@@ -15,10 +17,22 @@ const emptyForm: BlogPostInput = {
   title: "",
   slug: "",
   excerpt: "",
+  category: "",
+  tags: [],
   author: "Niškigram",
   coverImage: "/images/nis-hero.png",
   contentHtml: "<p></p>",
   published: false,
+};
+
+const maxUploadSizeBytes = 5 * 1024 * 1024;
+const imageAccept = ".jpg,.jpeg,.png,.webp";
+
+type UploadResponse = {
+  upload?: {
+    url: string;
+  };
+  error?: string;
 };
 
 function postToForm(post?: BlogPost | null): BlogPostInput {
@@ -27,6 +41,8 @@ function postToForm(post?: BlogPost | null): BlogPostInput {
         title: post.title,
         slug: post.slug,
         excerpt: post.excerpt,
+        category: post.category ?? "",
+        tags: post.tags ?? [],
         author: post.author,
         coverImage: post.coverImage,
         contentHtml: post.contentHtml,
@@ -45,12 +61,80 @@ function slugFromTitle(title: string) {
     .replace(/^-+|-+$/g, "");
 }
 
-export default function BlogForm({ post, onSaved, onCancelEdit }: BlogFormProps) {
+export default function BlogForm({
+  post,
+  categories,
+  onSaved,
+  onCancelEdit,
+}: BlogFormProps) {
   const [form, setForm] = useState<BlogPostInput>(() => postToForm(post));
+  const [tagsInput, setTagsInput] = useState(() =>
+    (postToForm(post).tags ?? []).join(", "),
+  );
   const [status, setStatus] = useState<"idle" | "saving" | "error">("idle");
+  const [uploadStatus, setUploadStatus] = useState<
+    "idle" | "uploading" | "success" | "error"
+  >("idle");
+  const [uploadMessage, setUploadMessage] = useState("");
   const [error, setError] = useState("");
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const previewDate = useMemo(() => new Date().toISOString(), []);
+  const categoryOptions = useMemo(() => {
+    const currentCategory = form.category?.trim();
+
+    if (currentCategory && !categories.includes(currentCategory)) {
+      return [currentCategory, ...categories];
+    }
+
+    return categories;
+  }, [categories, form.category]);
+
+  const uploadCoverImage = async (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+
+    if (!file) {
+      return;
+    }
+
+    setUploadStatus("uploading");
+    setUploadMessage("");
+
+    if (file.size > maxUploadSizeBytes) {
+      setUploadStatus("error");
+      setUploadMessage("Slika moze biti velika najvise 5 MB.");
+      event.target.value = "";
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("image", file);
+
+    const response = await fetch("/api/admin/blog/upload", {
+      method: "POST",
+      body: formData,
+    });
+    const payload = (await response.json()) as UploadResponse;
+
+    if (!response.ok || !payload.upload?.url) {
+      setUploadStatus("error");
+      setUploadMessage(payload.error || "Upload slike nije uspeo.");
+      event.target.value = "";
+      return;
+    }
+
+    setForm((current) => ({ ...current, coverImage: payload.upload!.url }));
+    setUploadStatus("success");
+    setUploadMessage("Slika je uploadovana.");
+    event.target.value = "";
+  };
+
+  const removeCoverImage = () => {
+    setForm((current) => ({ ...current, coverImage: "" }));
+    setUploadStatus("idle");
+    setUploadMessage("");
+    fileInputRef.current?.focus();
+  };
 
   const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -75,6 +159,7 @@ export default function BlogForm({ post, onSaved, onCancelEdit }: BlogFormProps)
 
     setStatus("idle");
     setForm(emptyForm);
+    setTagsInput("");
     onSaved();
   };
 
@@ -133,6 +218,48 @@ export default function BlogForm({ post, onSaved, onCancelEdit }: BlogFormProps)
           </label>
         </div>
 
+        <div className="grid gap-4 md:grid-cols-2">
+          <label>
+            <span className="mb-2 block font-semibold text-[#4a382b]">
+              Kategorija
+            </span>
+            <select
+              value={form.category ?? ""}
+              onChange={(event) =>
+                setForm((current) => ({
+                  ...current,
+                  category: event.target.value,
+                }))
+              }
+              className="w-full rounded-lg border border-[#5c4a3d]/20 bg-[#fdfaf6] px-4 py-3 text-[#4a382b] outline-none focus:ring-4 focus:ring-[#5c4a3d]/15"
+            >
+              <option value="">Bez kategorije</option>
+              {categoryOptions.map((category) => (
+                <option key={category} value={category}>
+                  {category}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label>
+            <span className="mb-2 block font-semibold text-[#4a382b]">
+              Tagovi
+            </span>
+            <input
+              value={tagsInput}
+              onChange={(event) => {
+                setTagsInput(event.target.value);
+                setForm((current) => ({
+                  ...current,
+                  tags: normalizeTags(event.target.value),
+                }));
+              }}
+              placeholder="npr. Nis, trening, vodic"
+              className="w-full rounded-lg border border-[#5c4a3d]/20 bg-[#fdfaf6] px-4 py-3 text-[#4a382b] outline-none focus:ring-4 focus:ring-[#5c4a3d]/15"
+            />
+          </label>
+        </div>
+
         <label>
           <span className="mb-2 block font-semibold text-[#4a382b]">Excerpt</span>
           <textarea
@@ -161,6 +288,59 @@ export default function BlogForm({ post, onSaved, onCancelEdit }: BlogFormProps)
             className="w-full rounded-lg border border-[#5c4a3d]/20 bg-[#fdfaf6] px-4 py-3 text-[#4a382b] outline-none focus:ring-4 focus:ring-[#5c4a3d]/15"
           />
         </label>
+
+        <div className="grid gap-3 rounded-lg border border-[#5c4a3d]/15 bg-[#fdfaf6] p-4">
+          <div className="flex flex-wrap items-center gap-3">
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept={imageAccept}
+              onChange={uploadCoverImage}
+              className="sr-only"
+              id="cover-image-upload"
+            />
+            <label
+              htmlFor="cover-image-upload"
+              className="cursor-pointer rounded-lg bg-[#5c4a3d] px-5 py-3 text-sm font-semibold text-[#fdfaf6] transition-colors hover:bg-[#47382f]"
+            >
+              Upload cover slike
+            </label>
+            {form.coverImage ? (
+              <button
+                type="button"
+                onClick={removeCoverImage}
+                className="rounded-lg border border-[#5c4a3d]/25 px-5 py-3 text-sm font-semibold text-[#5c4a3d] transition-colors hover:bg-[#5c4a3d]/8"
+              >
+                Ukloni sliku
+              </button>
+            ) : null}
+          </div>
+          <p className="text-sm text-[#5c4a3d]/70">
+            JPG, JPEG, PNG ili WEBP, najvise 5 MB.
+          </p>
+          {uploadStatus === "uploading" ? (
+            <p className="text-sm font-semibold text-[#5c4a3d]">Uploadujem...</p>
+          ) : null}
+          {uploadMessage ? (
+            <p
+              className={`text-sm font-semibold ${
+                uploadStatus === "error" ? "text-red-700" : "text-green-800"
+              }`}
+            >
+              {uploadMessage}
+            </p>
+          ) : null}
+          {form.coverImage ? (
+            <div className="overflow-hidden rounded-lg border border-[#5c4a3d]/10 bg-[#e8e0d5]">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={form.coverImage}
+                alt="Cover preview"
+                className="h-56 w-full object-cover object-bottom"
+              />
+            </div>
+          ) : null}
+        </div>
 
         <label className="flex items-center gap-3 font-semibold text-[#4a382b]">
           <input
@@ -216,10 +396,37 @@ export default function BlogForm({ post, onSaved, onCancelEdit }: BlogFormProps)
         <h3 className="font-serif text-3xl text-[#4a382b]">
           {form.title || "Naslov objave"}
         </h3>
+        {form.coverImage ? (
+          <div className="mt-5 overflow-hidden rounded-xl bg-[#e8e0d5]">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={form.coverImage}
+              alt={form.title || "Preview cover"}
+              className="h-64 w-full object-cover object-bottom"
+            />
+          </div>
+        ) : null}
         <p className="mt-3 text-sm font-semibold text-[#5c4a3d]/65">
           {form.author || "Autor"} /{" "}
           {new Intl.DateTimeFormat("sr-RS").format(new Date(previewDate))}
         </p>
+        {form.category || form.tags?.length ? (
+          <div className="mt-4 flex flex-wrap gap-2">
+            {form.category ? (
+              <span className="rounded-full bg-[#5c4a3d] px-3 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-[#fdfaf6]">
+                {form.category}
+              </span>
+            ) : null}
+            {form.tags?.map((tag) => (
+              <span
+                key={tag}
+                className="rounded-full border border-[#5c4a3d]/20 px-3 py-1 text-xs font-semibold text-[#5c4a3d]"
+              >
+                #{tag}
+              </span>
+            ))}
+          </div>
+        ) : null}
         <p className="mt-5 leading-7 text-[#5c4a3d]/75">
           {form.excerpt || "Kratak opis objave."}
         </p>

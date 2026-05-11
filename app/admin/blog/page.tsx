@@ -3,6 +3,7 @@ import AdminBlogManager from "@/components/AdminBlogManager";
 import Navbar from "@/components/Navbar";
 import { isAdminSession } from "@/lib/adminAuth";
 import { getAllPosts } from "@/lib/blog";
+import { getBlogCategories } from "@/lib/blogCategories";
 
 export const dynamic = "force-dynamic";
 
@@ -12,6 +13,7 @@ export default async function AdminBlogPage() {
   }
 
   const posts = await getAllPosts();
+  const categories = await getBlogCategories();
 
   return (
     <div className="min-h-screen bg-[#f4efe6] font-sans selection:bg-[#5c4a3d]/20">
@@ -30,7 +32,7 @@ export default async function AdminBlogPage() {
               postove. Javna blog strana prikazuje samo objavljene postove.
             </p>
           </div>
-          <AdminBlogManager initialPosts={posts} />
+          <AdminBlogManager initialPosts={posts} initialCategories={categories} />
         </div>
       </main>
     </div>
