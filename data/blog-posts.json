@@ -1,14 +1,16 @@
 [
   {
-    "id": "710e24a8-cab8-4a5f-b753-bcdaea9c6b86",
-    "title": "naslov",
-    "slug": "n",
-    "excerpt": "dkfhgsdfkjhg",
+    "id": "d88167ae-bd3c-4df9-967a-09439c27a78f",
+    "title": "test",
+    "slug": "t",
+    "excerpt": "test",
     "author": "Niškigram",
+    "category": "Novosti",
+    "tags": [],
     "coverImage": "/images/nis-hero.png",
-    "contentHtml": "kshdgfhksdgfdskhgfsdkghf<p></p>",
+    "contentHtml": "test<p></p>",
     "published": true,
-    "createdAt": "2026-05-11T11:24:24.299Z",
-    "updatedAt": "2026-05-11T11:24:53.491Z"
+    "createdAt": "2026-05-12T08:34:53.293Z",
+    "updatedAt": "2026-05-12T08:35:13.062Z"
   }
 ]

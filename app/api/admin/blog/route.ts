@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { adminCookieName, verifyAdminSession } from "@/lib/adminAuth";
 import { createPost, getAllPosts, type BlogPostInput } from "@/lib/blog";
 
@@ -40,5 +41,7 @@ export async function POST(request: NextRequest) {
   }
 
   const post = await createPost(input);
+  revalidatePath("/blog");
+  revalidatePath(`/blog/${post.slug}`);
   return NextResponse.json({ post }, { status: 201 });
 }

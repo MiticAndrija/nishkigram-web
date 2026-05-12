@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { adminCookieName, verifyAdminSession } from "@/lib/adminAuth";
-import { deletePost, updatePost, type BlogPostInput } from "@/lib/blog";
+import { deletePost, getPostById, updatePost, type BlogPostInput } from "@/lib/blog";
 
 export const dynamic = "force-dynamic";
 
@@ -35,10 +36,18 @@ export async function PUT(
   }
 
   const { id } = await context.params;
+  const existingPost = await getPostById(id);
   const post = await updatePost(id, input);
 
   if (!post) {
     return NextResponse.json({ error: "Objava nije pronađena." }, { status: 404 });
+  }
+
+  revalidatePath("/blog");
+  revalidatePath(`/blog/${post.slug}`);
+
+  if (existingPost && existingPost.slug !== post.slug) {
+    revalidatePath(`/blog/${existingPost.slug}`);
   }
 
   return NextResponse.json({ post });
@@ -53,10 +62,17 @@ export async function DELETE(
   }
 
   const { id } = await context.params;
+  const existingPost = await getPostById(id);
   const deleted = await deletePost(id);
 
   if (!deleted) {
     return NextResponse.json({ error: "Objava nije pronađena." }, { status: 404 });
+  }
+
+  revalidatePath("/blog");
+
+  if (existingPost) {
+    revalidatePath(`/blog/${existingPost.slug}`);
   }
 
   return NextResponse.json({ ok: true });

@@ -22,7 +22,7 @@ const emptyForm: BlogPostInput = {
   author: "Niškigram",
   coverImage: "/images/nis-hero.png",
   contentHtml: "<p></p>",
-  published: false,
+  published: true,
 };
 
 const maxUploadSizeBytes = 5 * 1024 * 1024;
