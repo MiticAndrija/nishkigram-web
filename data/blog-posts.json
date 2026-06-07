@@ -1,16 +1,21 @@
 [
   {
+<<<<<<< HEAD
     "id": "fa007f91-858b-417c-b833-081d205ff7e9",
     "title": "testic malenic",
+=======
+    "id": "91e8db3c-0f19-4e28-a1e1-d7222a7b7325",
+    "title": "test",
+>>>>>>> 75d6c3ffbcb6a0cb8d866e67d6e20841953df1e4
     "slug": "t",
     "excerpt": "test",
     "author": "Niškigram",
-    "category": "Novosti",
+    "category": "",
     "tags": [],
     "coverImage": "/images/nis-hero.png",
-    "contentHtml": "novost test<p></p><h2>novoestadsds</h2><br /><br /><p>ovo je paragraf</p><p><a href=\"https://www.youtube.com/\" target=\"_blank\" rel=\"noopener noreferrer\">https://www.youtube.com/</a><br /></p><p><br /></p>",
+    "contentHtml": "test<p></p>",
     "published": true,
-    "createdAt": "2026-06-07T16:09:52.112Z",
-    "updatedAt": "2026-06-07T16:09:52.112Z"
+    "createdAt": "2026-06-07T16:23:03.544Z",
+    "updatedAt": "2026-06-07T16:23:03.544Z"
   }
 ]
