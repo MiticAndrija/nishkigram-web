@@ -1,5 +1,6 @@
 import { promises as fs } from "node:fs";
 import path from "node:path";
+import { put, del } from "@vercel/blob";
 
 type UploadedImageReference = {
   coverImage?: string;
@@ -92,14 +93,27 @@ export async function saveBlogImageUpload(file: File) {
     throw new Error(validationError);
   }
 
-  await fs.mkdir(uploadDirectory, { recursive: true });
-
   const extension = mimeExtensions.get(file.type) || "jpg";
   const safeBaseName = sanitizeBaseName(file.name);
   const filename = `${Date.now()}-${crypto.randomUUID()}-${safeBaseName}.${extension}`;
+
+  // If Vercel Blob token is configured, upload to Vercel Blob
+  if (process.env.BLOB_READ_WRITE_TOKEN) {
+    const blob = await put(`uploads/blog/${filename}`, file, {
+      access: "public",
+      token: process.env.BLOB_READ_WRITE_TOKEN,
+    });
+    return {
+      url: blob.url,
+      filename: blob.pathname,
+      size: file.size,
+    };
+  }
+
+  // Fallback to local filesystem upload
+  await fs.mkdir(uploadDirectory, { recursive: true });
   const targetPath = getSafeUploadPath(filename);
   const buffer = Buffer.from(await file.arrayBuffer());
-
   await fs.writeFile(targetPath, buffer);
 
   return {
@@ -117,7 +131,10 @@ function extractBlogUploadUrlsFromHtml(html = "") {
   while ((match = imageSrcPattern.exec(html))) {
     const src = match[1];
 
-    if (src.startsWith(uploadPublicPath)) {
+    if (
+      src.startsWith(uploadPublicPath) ||
+      src.includes(".public.blob.vercel-storage.com")
+    ) {
       urls.add(src);
     }
   }
@@ -128,7 +145,10 @@ function extractBlogUploadUrlsFromHtml(html = "") {
 export function getBlogUploadUrls(reference: UploadedImageReference) {
   const urls = extractBlogUploadUrlsFromHtml(reference.contentHtml);
 
-  if (reference.coverImage?.startsWith(uploadPublicPath)) {
+  if (
+    reference.coverImage?.startsWith(uploadPublicPath) ||
+    reference.coverImage?.includes(".public.blob.vercel-storage.com")
+  ) {
     urls.add(reference.coverImage);
   }
 
@@ -136,6 +156,21 @@ export function getBlogUploadUrls(reference: UploadedImageReference) {
 }
 
 export async function removeUploadedBlogImage(imageUrl: string) {
+  // If Vercel Blob URL, delete from Vercel Blob storage
+  if (
+    process.env.BLOB_READ_WRITE_TOKEN &&
+    imageUrl.includes(".public.blob.vercel-storage.com")
+  ) {
+    try {
+      await del(imageUrl, { token: process.env.BLOB_READ_WRITE_TOKEN });
+      return true;
+    } catch (error) {
+      console.warn("Failed to delete Vercel Blob image:", imageUrl, error);
+      return false;
+    }
+  }
+
+  // Local filesystem cleanup
   const filename = getUploadFilenameFromUrl(imageUrl);
 
   if (!filename) {

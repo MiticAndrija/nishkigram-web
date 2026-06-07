@@ -1,9 +1,8 @@
-import { promises as fs } from "node:fs";
-import path from "node:path";
 import { getBlogCategories } from "@/lib/blogCategories";
 import { removeUnusedBlogUploads } from "@/lib/blogUploads";
 import { normalizeCategory, normalizeTags } from "@/lib/blogMeta";
 import { sanitizeHtml } from "@/lib/sanitizeHtml";
+import { readJsonFile, writeJsonFile } from "@/lib/github";
 
 export type BlogPost = {
   id: string;
@@ -32,17 +31,7 @@ export type BlogPostInput = {
   published: boolean;
 };
 
-const blogDataPath = path.join(process.cwd(), "data", "blog-posts.json");
-
-async function ensureBlogFile() {
-  await fs.mkdir(path.dirname(blogDataPath), { recursive: true });
-
-  try {
-    await fs.access(blogDataPath);
-  } catch {
-    await fs.writeFile(blogDataPath, "[]", "utf8");
-  }
-}
+const blogDataPath = "data/blog-posts.json";
 
 function sortPosts(posts: BlogPost[]) {
   return [...posts].sort(
@@ -77,35 +66,29 @@ function uniqueSlug(baseSlug: string, posts: BlogPost[], ignoredId?: string) {
   return candidate;
 }
 
-export async function getAllPosts() {
-  await ensureBlogFile();
-  const raw = await fs.readFile(blogDataPath, "utf8");
-  return sortPosts(JSON.parse(raw) as BlogPost[]);
+export async function getAllPosts(forceLive = false) {
+  const { data } = await readJsonFile<BlogPost[]>(blogDataPath, [], forceLive);
+  return sortPosts(data);
 }
 
-export async function getPublishedPosts() {
-  const posts = await getAllPosts();
+export async function getPublishedPosts(forceLive = false) {
+  const posts = await getAllPosts(forceLive);
   return posts.filter((post) => post.published);
 }
 
-export async function getPublishedPostBySlug(slug: string) {
-  const posts = await getPublishedPosts();
+export async function getPublishedPostBySlug(slug: string, forceLive = false) {
+  const posts = await getPublishedPosts(forceLive);
   return posts.find((post) => post.slug === slug) ?? null;
 }
 
-export async function getPostById(id: string) {
-  const posts = await getAllPosts();
+export async function getPostById(id: string, forceLive = false) {
+  const posts = await getAllPosts(forceLive);
   return posts.find((post) => post.id === id) ?? null;
 }
 
-async function writePosts(posts: BlogPost[]) {
-  await ensureBlogFile();
-  await fs.writeFile(blogDataPath, JSON.stringify(sortPosts(posts), null, 2), "utf8");
-}
-
 export async function createPost(input: BlogPostInput) {
-  const posts = await getAllPosts();
-  const categories = await getBlogCategories();
+  const { data: posts, sha } = await readJsonFile<BlogPost[]>(blogDataPath, [], true);
+  const categories = await getBlogCategories(true);
   const now = new Date().toISOString();
   const slug = uniqueSlug(slugify(input.slug || input.title), posts);
 
@@ -124,13 +107,14 @@ export async function createPost(input: BlogPostInput) {
     updatedAt: now,
   };
 
-  await writePosts([post, ...posts]);
+  const updatedPosts = [post, ...posts];
+  await writeJsonFile(blogDataPath, updatedPosts, `Create blog post: ${post.title}`, sha);
   return post;
 }
 
 export async function updatePost(id: string, input: BlogPostInput) {
-  const posts = await getAllPosts();
-  const categories = await getBlogCategories();
+  const { data: posts, sha } = await readJsonFile<BlogPost[]>(blogDataPath, [], true);
+  const categories = await getBlogCategories(true);
   const existing = posts.find((post) => post.id === id);
 
   if (!existing) {
@@ -155,12 +139,13 @@ export async function updatePost(id: string, input: BlogPostInput) {
     updatedAt: new Date().toISOString(),
   };
 
-  await writePosts(posts.map((post) => (post.id === id ? updatedPost : post)));
+  const updatedPosts = posts.map((post) => (post.id === id ? updatedPost : post));
+  await writeJsonFile(blogDataPath, updatedPosts, `Update blog post: ${updatedPost.title}`, sha);
   return updatedPost;
 }
 
 export async function deletePost(id: string) {
-  const posts = await getAllPosts();
+  const { data: posts, sha } = await readJsonFile<BlogPost[]>(blogDataPath, [], true);
   const deletedPost = posts.find((post) => post.id === id);
   const nextPosts = posts.filter((post) => post.id !== id);
 
@@ -168,7 +153,7 @@ export async function deletePost(id: string) {
     return false;
   }
 
-  await writePosts(nextPosts);
+  await writeJsonFile(blogDataPath, nextPosts, `Delete blog post: ${deletedPost?.title || id}`, sha);
 
   if (deletedPost) {
     try {

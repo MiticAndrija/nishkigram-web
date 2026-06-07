@@ -23,7 +23,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  return NextResponse.json({ posts: await getAllPosts() });
+  return NextResponse.json({ posts: await getAllPosts(true) });
 }
 
 export async function POST(request: NextRequest) {

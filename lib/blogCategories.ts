@@ -1,8 +1,7 @@
-import { promises as fs } from "node:fs";
-import path from "node:path";
 import { defaultBlogCategories } from "@/lib/blogMeta";
+import { readJsonFile, writeJsonFile } from "@/lib/github";
 
-const blogCategoriesPath = path.join(process.cwd(), "data", "blog-categories.json");
+const blogCategoriesPath = "data/blog-categories.json";
 
 function normalizeCategoryName(value: string) {
   return value.trim().replace(/\s+/g, " ").slice(0, 40);
@@ -25,33 +24,13 @@ function dedupeCategories(categories: string[]) {
   return normalizedCategories;
 }
 
-async function ensureBlogCategoriesFile() {
-  await fs.mkdir(path.dirname(blogCategoriesPath), { recursive: true });
-
-  try {
-    await fs.access(blogCategoriesPath);
-  } catch {
-    await fs.writeFile(
-      blogCategoriesPath,
-      JSON.stringify(defaultBlogCategories, null, 2),
-      "utf8",
-    );
-  }
-}
-
-async function writeBlogCategories(categories: string[]) {
-  await ensureBlogCategoriesFile();
-  await fs.writeFile(
+export async function getBlogCategories(forceLive = false) {
+  const { data } = await readJsonFile<string[]>(
     blogCategoriesPath,
-    JSON.stringify(dedupeCategories(categories), null, 2),
-    "utf8",
+    defaultBlogCategories,
+    forceLive,
   );
-}
-
-export async function getBlogCategories() {
-  await ensureBlogCategoriesFile();
-  const raw = await fs.readFile(blogCategoriesPath, "utf8");
-  return dedupeCategories(JSON.parse(raw) as string[]);
+  return dedupeCategories(data);
 }
 
 export async function addBlogCategory(category: string) {
@@ -61,8 +40,13 @@ export async function addBlogCategory(category: string) {
     throw new Error("Naziv kategorije je obavezan.");
   }
 
-  const categories = await getBlogCategories();
-  const exists = categories.some(
+  const { data: categories, sha } = await readJsonFile<string[]>(
+    blogCategoriesPath,
+    defaultBlogCategories,
+    true,
+  );
+  const normalizedCategories = dedupeCategories(categories);
+  const exists = normalizedCategories.some(
     (existingCategory) =>
       existingCategory.toLowerCase() === normalizedCategory.toLowerCase(),
   );
@@ -71,23 +55,38 @@ export async function addBlogCategory(category: string) {
     throw new Error("Kategorija vec postoji.");
   }
 
-  const nextCategories = [...categories, normalizedCategory];
-  await writeBlogCategories(nextCategories);
+  const nextCategories = dedupeCategories([...normalizedCategories, normalizedCategory]);
+  await writeJsonFile(
+    blogCategoriesPath,
+    nextCategories,
+    `Add blog category: ${normalizedCategory}`,
+    sha,
+  );
   return nextCategories;
 }
 
 export async function deleteBlogCategory(category: string) {
   const normalizedCategory = normalizeCategoryName(category);
-  const categories = await getBlogCategories();
-  const nextCategories = categories.filter(
+  const { data: categories, sha } = await readJsonFile<string[]>(
+    blogCategoriesPath,
+    defaultBlogCategories,
+    true,
+  );
+  const normalizedCategories = dedupeCategories(categories);
+  const nextCategories = normalizedCategories.filter(
     (existingCategory) =>
       existingCategory.toLowerCase() !== normalizedCategory.toLowerCase(),
   );
 
-  if (nextCategories.length === categories.length) {
+  if (nextCategories.length === normalizedCategories.length) {
     throw new Error("Kategorija nije pronadjena.");
   }
 
-  await writeBlogCategories(nextCategories);
+  await writeJsonFile(
+    blogCategoriesPath,
+    nextCategories,
+    `Delete blog category: ${normalizedCategory}`,
+    sha,
+  );
   return nextCategories;
 }

@@ -12,8 +12,8 @@ export default async function AdminBlogPage() {
     redirect("/admin/login");
   }
 
-  const posts = await getAllPosts();
-  const categories = await getBlogCategories();
+  const posts = await getAllPosts(true);
+  const categories = await getBlogCategories(true);
 
   return (
     <div className="min-h-screen bg-[#f4efe6] font-sans selection:bg-[#5c4a3d]/20">

@@ -36,7 +36,7 @@ export async function PUT(
   }
 
   const { id } = await context.params;
-  const existingPost = await getPostById(id);
+  const existingPost = await getPostById(id, true);
   const post = await updatePost(id, input);
 
   if (!post) {
@@ -62,7 +62,7 @@ export async function DELETE(
   }
 
   const { id } = await context.params;
-  const existingPost = await getPostById(id);
+  const existingPost = await getPostById(id, true);
   const deleted = await deletePost(id);
 
   if (!deleted) {

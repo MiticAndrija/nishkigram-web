@@ -11,6 +11,7 @@ export async function POST(request: Request) {
   const password = String(formData.get("password") || "");
 
   if (!verifyAdminPassword(password)) {
+    await new Promise((resolve) => setTimeout(resolve, 1500));
     return NextResponse.redirect(new URL("/admin/login", request.url));
   }
 
