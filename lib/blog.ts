@@ -76,7 +76,7 @@ export async function getPublishedPosts(forceLive = true) {
   return posts.filter((post) => post.published);
 }
 
-export async function getPublishedPostBySlug(slug: string, forceLive = false) {
+export async function getPublishedPostBySlug(slug: string, forceLive = true) {
   const posts = await getPublishedPosts(forceLive);
   return posts.find((post) => post.slug === slug) ?? null;
 }

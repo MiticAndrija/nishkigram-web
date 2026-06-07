@@ -6,7 +6,7 @@ import Navbar from "@/components/Navbar";
 import { getPublishedPostBySlug } from "@/lib/blog";
 
 export const dynamic = "force-dynamic";
-export const dynamicParams = true;
+export const revalidate = 0;
 
 function formatDate(value: string) {
   return new Intl.DateTimeFormat("sr-RS", {
@@ -22,7 +22,7 @@ export default async function BlogPostPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const post = await getPublishedPostBySlug(slug);
+  const post = await getPublishedPostBySlug(slug, true);
 
   if (!post) {
     notFound();
