@@ -18,15 +18,11 @@ export default async function AdminLoginPage() {
           method="post"
           className="w-full max-w-md rounded-[1.5rem] border border-[#5c4a3d]/10 bg-[#fdfaf6] p-8 shadow-xl"
         >
-          <p className="text-sm font-semibold uppercase tracking-[0.22em] text-[#8b6f56]">
-            Admin
-          </p>
-          <h1 className="mt-3 font-serif text-4xl text-[#4a382b]">
-            Prijava za blog
+          <h1 className="font-serif text-3xl text-[#4a382b]">
+            Prijava na sistem
           </h1>
-          <p className="mt-4 leading-7 text-[#5c4a3d]/75">
-            Unesite admin lozinku. U produkciji podesite `ADMIN_PASSWORD` i
-            `ADMIN_SESSION_SECRET` u environment promenljivama.
+          <p className="mt-2 text-sm text-[#5c4a3d]/75">
+            Unesite lozinku za pristup administratorskom panelu.
           </p>
           <label className="mt-6 block">
             <span className="mb-2 block font-semibold text-[#4a382b]">

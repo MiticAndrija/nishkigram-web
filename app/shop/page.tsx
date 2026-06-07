@@ -2,36 +2,8 @@ import Image from "next/image";
 import Link from "next/link";
 import Navbar from "@/components/Navbar";
 
-const products = [
-  {
-    name: "Niš panorama poster",
-    category: "Poster",
-    price: "Uskoro",
-    description:
-      "Topao gradski motiv za zid, inspirisan prepoznatljivim niškim horizontom.",
-    image: "/images/nis-hero.png",
-  },
-  {
-    name: "Majica \"Kod Konja\"",
-    category: "Odeća",
-    price: "Uskoro",
-    description: "Minimalan lokalni znak na svakodnevnom komadu garderobe.",
-    image: "/images/konjanik.png",
-  },
-  {
-    name: "Set razglednica",
-    category: "Papir",
-    price: "Uskoro",
-    description: "Tri mala gradska kadra za slanje, čuvanje ili poklon.",
-    image: "/images/nis-hero.png",
-  },
-];
 
-const steps = [
-  "Pratimo prve reakcije publike.",
-  "Biramo motive koji najviše liče na Niš.",
-  "Pripremamo malu seriju proizvoda.",
-];
+
 
 export default function ShopPage() {
   return (
@@ -82,87 +54,11 @@ export default function ShopPage() {
                   priority
                 />
               </div>
-              <div className="relative mt-6 flex items-center justify-between gap-4">
-                <div>
-                  <p className="text-sm font-semibold uppercase tracking-[0.2em] text-[#8b6f56]">
-                    Prva kolekcija
-                  </p>
-                  <p className="mt-2 text-2xl font-serif text-[#4a382b]">
-                    U pripremi
-                  </p>
-                </div>
-                <span className="rounded-full bg-[#5c4a3d] px-4 py-2 text-sm font-semibold text-[#fdfaf6]">
-                  Uskoro
-                </span>
-              </div>
+
             </div>
           </div>
         </section>
 
-        <section className="bg-[#fdfaf6] px-6 py-18 md:px-10 md:py-24">
-          <div className="mx-auto max-w-6xl">
-            <div className="flex flex-col justify-between gap-6 md:flex-row md:items-end">
-              <div className="max-w-2xl">
-                <h2 className="font-serif text-4xl text-[#4a382b] md:text-5xl">
-                  Kolekcija u najavi
-                </h2>
-                <p className="mt-5 text-lg leading-8 text-[#5c4a3d]/75">
-                  Proizvodi još nisu otvoreni za kupovinu. Ova stranica
-                  postavlja pravac shopa i ostavlja mesto za prvu seriju kada
-                  bude spremna.
-                </p>
-              </div>
-              <Link
-                href="https://www.instagram.com/nishkigram/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex w-fit items-center justify-center rounded-lg border border-[#5c4a3d]/25 px-6 py-3 font-semibold text-[#5c4a3d] transition-colors hover:bg-[#5c4a3d]/8"
-              >
-                Pitajte na Instagramu
-              </Link>
-            </div>
-
-            <div className="mt-12 grid gap-7 md:grid-cols-3">
-              {products.map((product) => (
-                <article
-                  key={product.name}
-                  className="overflow-hidden rounded-[1.5rem] border border-[#5c4a3d]/10 bg-[#f4efe6]"
-                >
-                  <div className="relative h-64 bg-[#e8e0d5]">
-                    <Image
-                      src={product.image}
-                      alt={product.name}
-                      fill
-                      sizes="(min-width: 768px) 33vw, 100vw"
-                      className={
-                        product.image.includes("konjanik")
-                          ? "object-contain p-10"
-                          : "object-cover object-bottom"
-                      }
-                      unoptimized={product.image.includes("nis-hero")}
-                    />
-                  </div>
-                  <div className="p-7">
-                    <div className="mb-4 flex items-center justify-between gap-4">
-                      <span className="text-sm font-semibold uppercase tracking-[0.18em] text-[#8b6f56]">
-                        {product.category}
-                      </span>
-                      <span className="rounded-full bg-[#5c4a3d]/10 px-3 py-1 text-sm font-semibold text-[#5c4a3d]">
-                        {product.price}
-                      </span>
-                    </div>
-                    <h3 className="font-serif text-2xl text-[#4a382b]">
-                      {product.name}
-                    </h3>
-                    <p className="mt-3 leading-7 text-[#5c4a3d]/75">
-                      {product.description}
-                    </p>
-                  </div>
-                </article>
-              ))}
-            </div>
-          </div>
-        </section>
 
         <section className="px-6 py-18 md:px-10 md:py-24">
           <div className="mx-auto grid max-w-6xl gap-10 md:grid-cols-[0.9fr_1.1fr] md:items-center">
@@ -176,19 +72,7 @@ export default function ShopPage() {
                 smisla za poklon ili ličnu uspomenu.
               </p>
             </div>
-            <div className="grid gap-4">
-              {steps.map((step, index) => (
-                <div
-                  key={step}
-                  className="flex items-center gap-5 rounded-[1.25rem] bg-[#fdfaf6] p-6 shadow-sm"
-                >
-                  <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#5c4a3d] font-semibold text-[#fdfaf6]">
-                    {index + 1}
-                  </span>
-                  <p className="text-lg font-medium text-[#5c4a3d]">{step}</p>
-                </div>
-              ))}
-            </div>
+
           </div>
         </section>
       </main>
