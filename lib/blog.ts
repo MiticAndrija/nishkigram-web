@@ -66,12 +66,12 @@ function uniqueSlug(baseSlug: string, posts: BlogPost[], ignoredId?: string) {
   return candidate;
 }
 
-export async function getAllPosts(forceLive = false) {
+export async function getAllPosts(forceLive = true) {
   const { data } = await readJsonFile<BlogPost[]>(blogDataPath, [], forceLive);
   return sortPosts(data);
 }
 
-export async function getPublishedPosts(forceLive = false) {
+export async function getPublishedPosts(forceLive = true) {
   const posts = await getAllPosts(forceLive);
   return posts.filter((post) => post.published);
 }
