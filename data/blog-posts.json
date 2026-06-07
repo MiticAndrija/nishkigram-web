@@ -1,1 +1,16 @@
-[]
+[
+  {
+    "id": "1b611ab7-2d4c-4c25-b6a5-c82920956674",
+    "title": "test",
+    "slug": "t",
+    "excerpt": "test",
+    "author": "Niškigram",
+    "category": "",
+    "tags": [],
+    "coverImage": "/images/nis-hero.png",
+    "contentHtml": "zzzz<p></p>",
+    "published": true,
+    "createdAt": "2026-06-07T16:30:16.171Z",
+    "updatedAt": "2026-06-07T16:30:16.171Z"
+  }
+]
