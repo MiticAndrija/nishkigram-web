@@ -6,6 +6,7 @@ import Navbar from "@/components/Navbar";
 import { getPublishedPostBySlug } from "@/lib/blog";
 
 export const dynamic = "force-dynamic";
+export const dynamicParams = true;
 
 function formatDate(value: string) {
   return new Intl.DateTimeFormat("sr-RS", {
