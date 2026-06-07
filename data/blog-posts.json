@@ -1,1 +1,16 @@
-[]
+[
+  {
+    "id": "fa007f91-858b-417c-b833-081d205ff7e9",
+    "title": "test",
+    "slug": "t",
+    "excerpt": "test",
+    "author": "Niškigram",
+    "category": "Novosti",
+    "tags": [],
+    "coverImage": "/images/nis-hero.png",
+    "contentHtml": "novost test<p></p><h2>novoestadsds</h2><br /><br /><p>ovo je paragraf</p><p><a href=\"https://www.youtube.com/\" target=\"_blank\" rel=\"noopener noreferrer\">https://www.youtube.com/</a><br /></p><p><br /></p>",
+    "published": true,
+    "createdAt": "2026-06-07T16:09:52.112Z",
+    "updatedAt": "2026-06-07T16:09:52.112Z"
+  }
+]
