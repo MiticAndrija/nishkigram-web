@@ -43,7 +43,7 @@ export default function Footer() {
             ))}
           </nav>
           <p className="text-sm text-[#5c4a3d]/65">
-            © {currentYear} <Link href="/admin/blog" className="hover:text-[#4a382b] transition-colors">Niskigram</Link>. All rights reserved.
+            © {currentYear} Ni<Link href="/admin/blog" className="text-inherit cursor-default">sk</Link>igram. All rights reserved.
           </p>
         </div>
       </div>
