@@ -19,12 +19,12 @@ const features = [
     image: "/globe.svg",
   },
   {
-    id: "shop",
-    title: "Shop",
-    description: "Dostupni proizvodi sa motivima Niša.",
-    linkText: "Istražite prodavnicu",
-    href: "/shop",
-    image: "/file.svg",
+    id: "preporuke",
+    title: "Preporuke",
+    description: "Proverena mesta u Nišu: kafići, restorani i više.",
+    linkText: "Pogledajte preporuke",
+    href: "/preporuke",
+    image: "/globe.svg",
   },
 ];
 

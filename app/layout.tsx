@@ -21,7 +21,7 @@ const playfair = Playfair_Display({
 
 export const metadata: Metadata = {
   title: "Nishkigram",
-  description: "Nishkigram – local motifs shop and blog",
+  description: "Nishkigram – lokalni blog i vodič kroz Niš",
 };
 
 

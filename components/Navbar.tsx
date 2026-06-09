@@ -18,10 +18,10 @@ const searchItems = [
     keywords: "blog vesti price dogadjaji nis",
   },
   {
-    title: "Shop",
-    description: "Proizvodi sa motivima Nisa.",
-    href: "/shop",
-    keywords: "shop prodavnica proizvodi nis",
+    title: "Preporuke",
+    description: "Proverena mesta u Nisu: kafici, restorani, barovi i vise.",
+    href: "/preporuke",
+    keywords: "preporuke kafici restorani barovi mesta nis",
   },
   {
     title: "Instagram",
@@ -103,8 +103,8 @@ export default function Navbar() {
         <Link href="/blog" className="hover:opacity-70 transition-opacity">
           Blog
         </Link>
-        <Link href="/shop" className="hover:opacity-70 transition-opacity">
-          Shop
+        <Link href="/preporuke" className="hover:opacity-70 transition-opacity">
+          Preporuke
         </Link>
       </div>
       <div className="justify-self-end">
