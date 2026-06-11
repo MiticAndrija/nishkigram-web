@@ -1,14 +1,1 @@
-[
-  {
-    "id": "91a7c094-bf25-4239-b384-7adb31294cf0",
-    "title": "test",
-    "slug": "t",
-    "description": "test",
-    "category": "Restorani",
-    "coverImage": "/images/nis-hero.png",
-    "contentHtml": "test<p></p>",
-    "published": true,
-    "createdAt": "2026-06-11T14:14:15.697Z",
-    "updatedAt": "2026-06-11T14:14:15.697Z"
-  }
-]
+[]
