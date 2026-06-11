@@ -1,4 +1,3 @@
-import Link from "next/link";
 import BlogSearch from "@/components/BlogSearch";
 import Navbar from "@/components/Navbar";
 import { getPublishedPosts } from "@/lib/blog";

@@ -5,6 +5,8 @@ import { ChangeEvent, useEffect, useRef, useState } from "react";
 type BlogEditorProps = {
   value: string;
   onChange: (value: string) => void;
+  uploadEndpoint?: string;
+  ariaLabel?: string;
 };
 
 const toolbarButtons = [
@@ -27,7 +29,12 @@ type UploadResponse = {
   error?: string;
 };
 
-export default function BlogEditor({ value, onChange }: BlogEditorProps) {
+export default function BlogEditor({
+  value,
+  onChange,
+  uploadEndpoint = "/api/admin/blog/upload",
+  ariaLabel = "Sadržaj blog objave",
+}: BlogEditorProps) {
   const editorRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploadStatus, setUploadStatus] = useState<
@@ -83,7 +90,7 @@ export default function BlogEditor({ value, onChange }: BlogEditorProps) {
     const formData = new FormData();
     formData.append("image", file);
 
-    const response = await fetch("/api/admin/blog/upload", {
+    const response = await fetch(uploadEndpoint, {
       method: "POST",
       body: formData,
     });
@@ -158,7 +165,7 @@ export default function BlogEditor({ value, onChange }: BlogEditorProps) {
         ref={editorRef}
         contentEditable
         role="textbox"
-        aria-label="Sadržaj blog objave"
+        aria-label={ariaLabel}
         onInput={(event) => onChange(event.currentTarget.innerHTML)}
         className="min-h-80 px-5 py-4 leading-8 text-[#4a382b] outline-none [&_a]:font-semibold [&_a]:text-[#5c4a3d] [&_h2]:font-serif [&_h2]:text-3xl [&_h3]:font-serif [&_h3]:text-2xl [&_img]:my-5 [&_img]:max-h-96 [&_img]:rounded-xl [&_img]:object-cover [&_li]:ml-6 [&_ol]:list-decimal [&_p]:mb-4 [&_strong]:font-bold [&_ul]:list-disc"
         suppressContentEditableWarning

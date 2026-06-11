@@ -1,0 +1,52 @@
+import { revalidatePath } from "next/cache";
+import { NextRequest, NextResponse } from "next/server";
+import { adminCookieName, verifyAdminSession } from "@/lib/adminAuth";
+import {
+  createRecommendation,
+  getAllRecommendations,
+  type RecommendationInput,
+} from "@/lib/recommendations";
+
+export const dynamic = "force-dynamic";
+
+function isAuthorized(request: NextRequest) {
+  return verifyAdminSession(request.cookies.get(adminCookieName)?.value);
+}
+
+function validateInput(input: RecommendationInput) {
+  return Boolean(
+    input.title?.trim() &&
+      input.description?.trim() &&
+      input.contentHtml?.trim(),
+  );
+}
+
+export async function GET(request: NextRequest) {
+  if (!isAuthorized(request)) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  return NextResponse.json({
+    recommendations: await getAllRecommendations(true),
+  });
+}
+
+export async function POST(request: NextRequest) {
+  if (!isAuthorized(request)) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const input = (await request.json()) as RecommendationInput;
+
+  if (!validateInput(input)) {
+    return NextResponse.json(
+      { error: "Naslov, opis i sadrzaj su obavezni." },
+      { status: 400 },
+    );
+  }
+
+  const recommendation = await createRecommendation(input);
+  revalidatePath("/preporuke");
+  revalidatePath(`/preporuke/${recommendation.slug}`);
+  return NextResponse.json({ recommendation }, { status: 201 });
+}

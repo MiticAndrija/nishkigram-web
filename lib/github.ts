@@ -1,6 +1,12 @@
 import { promises as fs } from "node:fs";
 import path from "node:path";
 
+type NextFetchInit = RequestInit & {
+  next?: {
+    revalidate?: number;
+  };
+};
+
 async function fetchFileFromGitHub(filePath: string) {
   const token = process.env.GITHUB_TOKEN;
   const repo = process.env.GITHUB_REPO;
@@ -18,7 +24,7 @@ async function fetchFileFromGitHub(filePath: string) {
       "User-Agent": "Niskigram-Web",
     },
     next: { revalidate: 0 },
-  } as any);
+  } satisfies NextFetchInit);
 
   if (!response.ok) {
     if (response.status === 404) {
@@ -47,7 +53,12 @@ async function updateFileInGitHub(
   }
 
   const url = `https://api.github.com/repos/${repo}/contents/${filePath}`;
-  const body: any = {
+  const body: {
+    message: string;
+    content: string;
+    branch: string;
+    sha?: string;
+  } = {
     message,
     content: Buffer.from(content, "utf8").toString("base64"),
     branch,
