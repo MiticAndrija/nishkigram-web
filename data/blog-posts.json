@@ -1,1 +1,16 @@
-[]
+[
+  {
+    "id": "b30261cb-e014-4a71-98cf-7b92c7e2ceb8",
+    "title": "zz",
+    "slug": "z",
+    "excerpt": "zz",
+    "author": "Niškigram",
+    "category": "Novosti",
+    "tags": [],
+    "coverImage": "/images/nis-hero.png",
+    "contentHtml": "zasdxcasd<p></p>",
+    "published": true,
+    "createdAt": "2026-06-11T14:14:34.976Z",
+    "updatedAt": "2026-06-11T14:14:34.976Z"
+  }
+]
