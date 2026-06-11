@@ -1,5 +1,6 @@
 import { removeUnusedBlogUploads } from "@/lib/blogUploads";
 import { normalizeCategory } from "@/lib/blogMeta";
+import { defaultCoverImage, getContentImageUrl } from "@/lib/contentImages";
 import { getRecommendationCategories } from "@/lib/recommendationCategories";
 import { sanitizeHtml } from "@/lib/sanitizeHtml";
 import { readJsonFile, writeJsonFile } from "@/lib/github";
@@ -17,6 +18,11 @@ export type Recommendation = {
   published: boolean;
   createdAt: string;
   updatedAt: string;
+};
+
+type RecommendationWithLegacyImage = Recommendation & {
+  imageUrl?: string;
+  image?: string;
 };
 
 export type RecommendationInput = {
@@ -62,12 +68,17 @@ function uniqueSlug(
 }
 
 export async function getAllRecommendations(forceLive = true) {
-  const { data } = await readJsonFile<Recommendation[]>(
+  const { data } = await readJsonFile<RecommendationWithLegacyImage[]>(
     recommendationsDataPath,
     [],
     forceLive,
   );
-  return sortRecommendations(data);
+  return sortRecommendations(
+    data.map((recommendation) => ({
+      ...recommendation,
+      coverImage: getContentImageUrl(recommendation),
+    })),
+  );
 }
 
 export async function getPublishedRecommendations(forceLive = true) {
@@ -107,7 +118,7 @@ export async function createRecommendation(input: RecommendationInput) {
     slug,
     description: input.description.trim(),
     category: normalizeCategory(input.category, categories),
-    coverImage: input.coverImage.trim() || "/images/nis-hero.png",
+    coverImage: input.coverImage.trim() || defaultCoverImage,
     coverImagePosition: input.coverImagePosition || "center bottom",
     contentHtml: sanitizeHtml(input.contentHtml),
     published: input.published,
@@ -153,7 +164,7 @@ export async function updateRecommendation(
     slug,
     description: input.description.trim(),
     category: normalizeCategory(input.category, categoryOptions),
-    coverImage: input.coverImage.trim() || "/images/nis-hero.png",
+    coverImage: input.coverImage.trim() || defaultCoverImage,
     coverImagePosition: input.coverImagePosition || "center bottom",
     contentHtml: sanitizeHtml(input.contentHtml),
     published: input.published,

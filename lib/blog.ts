@@ -1,6 +1,7 @@
 import { getBlogCategories } from "@/lib/blogCategories";
 import { removeUnusedBlogUploads } from "@/lib/blogUploads";
 import { normalizeCategory, normalizeTags } from "@/lib/blogMeta";
+import { defaultCoverImage, getContentImageUrl } from "@/lib/contentImages";
 import { sanitizeHtml } from "@/lib/sanitizeHtml";
 import { readJsonFile, writeJsonFile } from "@/lib/github";
 
@@ -18,6 +19,11 @@ export type BlogPost = {
   published: boolean;
   createdAt: string;
   updatedAt: string;
+};
+
+type BlogPostWithLegacyImage = BlogPost & {
+  imageUrl?: string;
+  image?: string;
 };
 
 export type BlogPostInput = {
@@ -69,8 +75,17 @@ function uniqueSlug(baseSlug: string, posts: BlogPost[], ignoredId?: string) {
 }
 
 export async function getAllPosts(forceLive = true) {
-  const { data } = await readJsonFile<BlogPost[]>(blogDataPath, [], forceLive);
-  return sortPosts(data);
+  const { data } = await readJsonFile<BlogPostWithLegacyImage[]>(
+    blogDataPath,
+    [],
+    forceLive,
+  );
+  return sortPosts(
+    data.map((post) => ({
+      ...post,
+      coverImage: getContentImageUrl(post),
+    })),
+  );
 }
 
 export async function getPublishedPosts(forceLive = true) {
@@ -102,7 +117,7 @@ export async function createPost(input: BlogPostInput) {
     author: input.author.trim(),
     category: normalizeCategory(input.category, categories),
     tags: normalizeTags(input.tags),
-    coverImage: input.coverImage.trim() || "/images/nis-hero.png",
+    coverImage: input.coverImage.trim() || defaultCoverImage,
     coverImagePosition: input.coverImagePosition || "center bottom",
     contentHtml: sanitizeHtml(input.contentHtml),
     published: input.published,
@@ -136,7 +151,7 @@ export async function updatePost(id: string, input: BlogPostInput) {
     author: input.author.trim(),
     category: normalizeCategory(input.category, categoryOptions),
     tags: normalizeTags(input.tags),
-    coverImage: input.coverImage.trim() || "/images/nis-hero.png",
+    coverImage: input.coverImage.trim() || defaultCoverImage,
     coverImagePosition: input.coverImagePosition || "center bottom",
     contentHtml: sanitizeHtml(input.contentHtml),
     published: input.published,

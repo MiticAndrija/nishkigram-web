@@ -4,6 +4,10 @@ import { notFound } from "next/navigation";
 import BlogPostContent from "@/components/BlogPostContent";
 import Navbar from "@/components/Navbar";
 import { getPublishedPostBySlug } from "@/lib/blog";
+import {
+  getContentImageUrl,
+  shouldUseUnoptimizedImage,
+} from "@/lib/contentImages";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -27,6 +31,8 @@ export default async function BlogPostPage({
   if (!post) {
     notFound();
   }
+
+  const coverImage = getContentImageUrl(post);
 
   return (
     <div className="min-h-screen bg-[#f4efe6] font-sans selection:bg-[#5c4a3d]/20">
@@ -75,7 +81,7 @@ export default async function BlogPostPage({
           <div className="px-6 md:px-10">
             <div className="relative mx-auto h-[420px] max-w-6xl overflow-hidden rounded-[2rem] bg-[#e8e0d5] shadow-2xl">
               <Image
-                src={post.coverImage}
+                src={coverImage}
                 alt={post.title}
                 fill
                 sizes="100vw"
@@ -84,10 +90,7 @@ export default async function BlogPostPage({
                   objectPosition: post.coverImagePosition || "center bottom",
                 }}
                 priority
-                unoptimized={
-                  post.coverImage.startsWith("/images/") ||
-                  post.coverImage.startsWith("/uploads/blog/")
-                }
+                unoptimized={shouldUseUnoptimizedImage(coverImage)}
               />
             </div>
           </div>

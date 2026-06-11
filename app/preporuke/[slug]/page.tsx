@@ -3,6 +3,10 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import BlogPostContent from "@/components/BlogPostContent";
 import Navbar from "@/components/Navbar";
+import {
+  getContentImageUrl,
+  shouldUseUnoptimizedImage,
+} from "@/lib/contentImages";
 import { getPublishedRecommendationBySlug } from "@/lib/recommendations";
 
 export const dynamic = "force-dynamic";
@@ -27,6 +31,8 @@ export default async function RecommendationPage({
   if (!recommendation) {
     notFound();
   }
+
+  const coverImage = getContentImageUrl(recommendation);
 
   return (
     <div className="min-h-screen bg-[#f4efe6] font-sans selection:bg-[#5c4a3d]/20">
@@ -65,7 +71,7 @@ export default async function RecommendationPage({
           <div className="px-6 md:px-10">
             <div className="relative mx-auto h-[420px] max-w-6xl overflow-hidden rounded-[2rem] bg-[#e8e0d5] shadow-2xl">
               <Image
-                src={recommendation.coverImage}
+                src={coverImage}
                 alt={recommendation.title}
                 fill
                 sizes="100vw"
@@ -75,10 +81,7 @@ export default async function RecommendationPage({
                     recommendation.coverImagePosition || "center bottom",
                 }}
                 priority
-                unoptimized={
-                  recommendation.coverImage.startsWith("/images/") ||
-                  recommendation.coverImage.startsWith("/uploads/blog/")
-                }
+                unoptimized={shouldUseUnoptimizedImage(coverImage)}
               />
             </div>
           </div>

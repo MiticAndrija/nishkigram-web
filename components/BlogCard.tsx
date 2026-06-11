@@ -3,6 +3,10 @@
 import Image from "next/image";
 import Link from "next/link";
 import type { BlogPost } from "@/lib/blog";
+import {
+  getContentImageUrl,
+  shouldUseUnoptimizedImage,
+} from "@/lib/contentImages";
 
 function formatDate(value: string) {
   return new Intl.DateTimeFormat("sr-RS", {
@@ -13,6 +17,8 @@ function formatDate(value: string) {
 }
 
 export default function BlogCard({ post }: { post: BlogPost }) {
+  const coverImage = getContentImageUrl(post);
+
   return (
     <Link
       href={`/blog/${post.slug}`}
@@ -20,16 +26,13 @@ export default function BlogCard({ post }: { post: BlogPost }) {
     >
       <div className="relative h-64 bg-[#e8e0d5]">
         <Image
-          src={post.coverImage}
+          src={coverImage}
           alt={post.title}
           fill
           sizes="(min-width: 768px) 33vw, 100vw"
           className="object-cover object-bottom transition-transform duration-500 group-hover:scale-105"
           style={{ objectPosition: post.coverImagePosition || "center bottom" }}
-          unoptimized={
-            post.coverImage.startsWith("/images/") ||
-            post.coverImage.startsWith("/uploads/blog/")
-          }
+          unoptimized={shouldUseUnoptimizedImage(coverImage)}
         />
       </div>
       <div className="p-7">

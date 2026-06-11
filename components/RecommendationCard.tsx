@@ -2,6 +2,10 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import {
+  getContentImageUrl,
+  shouldUseUnoptimizedImage,
+} from "@/lib/contentImages";
 import type { Recommendation } from "@/lib/recommendations";
 
 function formatDate(value: string) {
@@ -17,6 +21,8 @@ export default function RecommendationCard({
 }: {
   recommendation: Recommendation;
 }) {
+  const coverImage = getContentImageUrl(recommendation);
+
   return (
     <Link
       href={`/preporuke/${recommendation.slug}`}
@@ -24,7 +30,7 @@ export default function RecommendationCard({
     >
       <div className="relative h-64 bg-[#e8e0d5]">
         <Image
-          src={recommendation.coverImage}
+          src={coverImage}
           alt={recommendation.title}
           fill
           sizes="(min-width: 768px) 33vw, 100vw"
@@ -33,10 +39,7 @@ export default function RecommendationCard({
             objectPosition:
               recommendation.coverImagePosition || "center bottom",
           }}
-          unoptimized={
-            recommendation.coverImage.startsWith("/images/") ||
-            recommendation.coverImage.startsWith("/uploads/blog/")
-          }
+          unoptimized={shouldUseUnoptimizedImage(coverImage)}
         />
       </div>
       <div className="p-7">
