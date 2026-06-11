@@ -1,1 +1,17 @@
-[]
+[
+  {
+    "id": "284fea5d-260e-462a-9d99-1837d8c22fcc",
+    "title": "test",
+    "slug": "t",
+    "excerpt": "test",
+    "author": "Niškigram",
+    "category": "",
+    "tags": [],
+    "coverImage": "https://lyvgsogy1a06bcnh.public.blob.vercel-storage.com/uploads/blog/1781189885116-1faaf0fb-705f-45f0-ab18-28ebce7eb64c-aishot-5055.jpg",
+    "coverImagePosition": "24% 41%",
+    "contentHtml": "<p></p><img src=\"https://lyvgsogy1a06bcnh.public.blob.vercel-storage.com/uploads/blog/1781189897670-658dd690-ee74-47a7-9c15-dc8d2587d2e5-zzz.jpg\" alt=\"\" />",
+    "published": true,
+    "createdAt": "2026-06-11T14:58:24.419Z",
+    "updatedAt": "2026-06-11T14:58:24.419Z"
+  }
+]
