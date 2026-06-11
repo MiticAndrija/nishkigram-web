@@ -3,8 +3,17 @@
 import { ChangeEvent, FormEvent, useMemo, useRef, useState } from "react";
 import BlogEditor from "@/components/BlogEditor";
 import BlogPostContent from "@/components/BlogPostContent";
+import CoverImageFocusPicker from "@/components/CoverImageFocusPicker";
+import {
+  adminImageAccept,
+  uploadAdminImage,
+} from "@/lib/adminImageUploadClient";
 import type { BlogPost, BlogPostInput } from "@/lib/blog";
 import { normalizeTags } from "@/lib/blogMeta";
+import {
+  unsavedChangesConfirmationMessage,
+  useUnsavedChangesWarning,
+} from "@/lib/useUnsavedChangesWarning";
 
 type BlogFormProps = {
   post?: BlogPost | null;
@@ -21,19 +30,18 @@ const emptyForm: BlogPostInput = {
   tags: [],
   author: "Niškigram",
   coverImage: "/images/nis-hero.png",
+  coverImagePosition: "center bottom",
   contentHtml: "<p></p>",
   published: true,
 };
 
-const maxUploadSizeBytes = 5 * 1024 * 1024;
-const imageAccept = ".jpg,.jpeg,.png,.webp";
-
-type UploadResponse = {
-  upload?: {
-    url: string;
-  };
-  error?: string;
-};
+const coverImagePositions = [
+  { label: "Centar", value: "center center" },
+  { label: "Gore", value: "center top" },
+  { label: "Dole", value: "center bottom" },
+  { label: "Levo", value: "left center" },
+  { label: "Desno", value: "right center" },
+];
 
 function postToForm(post?: BlogPost | null): BlogPostInput {
   return post
@@ -45,6 +53,7 @@ function postToForm(post?: BlogPost | null): BlogPostInput {
         tags: post.tags ?? [],
         author: post.author,
         coverImage: post.coverImage,
+        coverImagePosition: post.coverImagePosition ?? "center bottom",
         contentHtml: post.contentHtml,
         published: post.published,
       }
@@ -78,6 +87,10 @@ export default function BlogForm({
   const [uploadMessage, setUploadMessage] = useState("");
   const [error, setError] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const initialForm = useMemo(() => postToForm(post), [post]);
+  const isDirty = JSON.stringify(form) !== JSON.stringify(initialForm);
+
+  useUnsavedChangesWarning(isDirty && status !== "saving");
 
   const previewDate = useMemo(() => new Date().toISOString(), []);
   const categoryOptions = useMemo(() => {
@@ -100,33 +113,24 @@ export default function BlogForm({
     setUploadStatus("uploading");
     setUploadMessage("");
 
-    if (file.size > maxUploadSizeBytes) {
+    try {
+      const uploadedImage = await uploadAdminImage(
+        file,
+        "/api/admin/blog/upload",
+        (percentage) =>
+          setUploadMessage(`Uploadujem sliku... ${Math.round(percentage)}%`),
+      );
+      setForm((current) => ({ ...current, coverImage: uploadedImage.url }));
+      setUploadStatus("success");
+      setUploadMessage("Slika je uploadovana.");
+    } catch (error) {
       setUploadStatus("error");
-      setUploadMessage("Slika moze biti velika najvise 5 MB.");
+      setUploadMessage(
+        error instanceof Error ? error.message : "Upload slike nije uspeo.",
+      );
+    } finally {
       event.target.value = "";
-      return;
     }
-
-    const formData = new FormData();
-    formData.append("image", file);
-
-    const response = await fetch("/api/admin/blog/upload", {
-      method: "POST",
-      body: formData,
-    });
-    const payload = (await response.json()) as UploadResponse;
-
-    if (!response.ok || !payload.upload?.url) {
-      setUploadStatus("error");
-      setUploadMessage(payload.error || "Upload slike nije uspeo.");
-      event.target.value = "";
-      return;
-    }
-
-    setForm((current) => ({ ...current, coverImage: payload.upload!.url }));
-    setUploadStatus("success");
-    setUploadMessage("Slika je uploadovana.");
-    event.target.value = "";
   };
 
   const removeCoverImage = () => {
@@ -134,6 +138,14 @@ export default function BlogForm({
     setUploadStatus("idle");
     setUploadMessage("");
     fileInputRef.current?.focus();
+  };
+
+  const cancelEdit = () => {
+    if (isDirty && !window.confirm(unsavedChangesConfirmationMessage)) {
+      return;
+    }
+
+    onCancelEdit();
   };
 
   const submit = async (event: FormEvent<HTMLFormElement>) => {
@@ -294,7 +306,7 @@ export default function BlogForm({
             <input
               ref={fileInputRef}
               type="file"
-              accept={imageAccept}
+              accept={adminImageAccept}
               onChange={uploadCoverImage}
               className="sr-only"
               id="cover-image-upload"
@@ -316,10 +328,12 @@ export default function BlogForm({
             ) : null}
           </div>
           <p className="text-sm text-[#5c4a3d]/70">
-            JPG, JPEG, PNG ili WEBP, najvise 5 MB.
+            JPG, JPEG, PNG ili WEBP, najviše 50 MB.
           </p>
           {uploadStatus === "uploading" ? (
-            <p className="text-sm font-semibold text-[#5c4a3d]">Uploadujem...</p>
+            <p className="text-sm font-semibold text-[#5c4a3d]">
+              {uploadMessage || "Uploadujem..."}
+            </p>
           ) : null}
           {uploadMessage ? (
             <p
@@ -331,16 +345,39 @@ export default function BlogForm({
             </p>
           ) : null}
           {form.coverImage ? (
-            <div className="overflow-hidden rounded-lg border border-[#5c4a3d]/10 bg-[#e8e0d5]">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={form.coverImage}
-                alt="Cover preview"
-                className="h-56 w-full object-cover object-bottom"
-              />
-            </div>
+            <CoverImageFocusPicker
+              imageUrl={form.coverImage}
+              alt="Cover preview"
+              value={form.coverImagePosition}
+              heightClass="h-56"
+              onChange={(coverImagePosition) =>
+                setForm((current) => ({ ...current, coverImagePosition }))
+              }
+            />
           ) : null}
         </div>
+
+        <label>
+          <span className="mb-2 block font-semibold text-[#4a382b]">
+            Fokus cover slike za brzi izbor
+          </span>
+          <select
+            value={form.coverImagePosition ?? "center bottom"}
+            onChange={(event) =>
+              setForm((current) => ({
+                ...current,
+                coverImagePosition: event.target.value,
+              }))
+            }
+            className="w-full rounded-lg border border-[#5c4a3d]/20 bg-[#fdfaf6] px-4 py-3 text-[#4a382b] outline-none focus:ring-4 focus:ring-[#5c4a3d]/15"
+          >
+            {coverImagePositions.map((position) => (
+              <option key={position.value} value={position.value}>
+                {position.label}
+              </option>
+            ))}
+          </select>
+        </label>
 
         <label className="flex items-center gap-3 font-semibold text-[#4a382b]">
           <input
@@ -380,7 +417,7 @@ export default function BlogForm({
           {post ? (
             <button
               type="button"
-              onClick={onCancelEdit}
+              onClick={cancelEdit}
               className="rounded-lg border border-[#5c4a3d]/25 px-6 py-3 font-semibold text-[#5c4a3d] transition-colors hover:bg-[#5c4a3d]/8"
             >
               Odustani
@@ -398,11 +435,14 @@ export default function BlogForm({
         </h3>
         {form.coverImage ? (
           <div className="mt-5 overflow-hidden rounded-xl bg-[#e8e0d5]">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={form.coverImage}
+            <CoverImageFocusPicker
+              imageUrl={form.coverImage}
               alt={form.title || "Preview cover"}
-              className="h-64 w-full object-cover object-bottom"
+              value={form.coverImagePosition}
+              heightClass="h-64"
+              onChange={(coverImagePosition) =>
+                setForm((current) => ({ ...current, coverImagePosition }))
+              }
             />
           </div>
         ) : null}

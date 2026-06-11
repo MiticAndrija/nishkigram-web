@@ -12,6 +12,7 @@ export type Recommendation = {
   description: string;
   category?: string;
   coverImage: string;
+  coverImagePosition?: string;
   contentHtml: string;
   published: boolean;
   createdAt: string;
@@ -24,6 +25,7 @@ export type RecommendationInput = {
   description: string;
   category?: string;
   coverImage: string;
+  coverImagePosition?: string;
   contentHtml: string;
   published: boolean;
 };
@@ -106,6 +108,7 @@ export async function createRecommendation(input: RecommendationInput) {
     description: input.description.trim(),
     category: normalizeCategory(input.category, categories),
     coverImage: input.coverImage.trim() || "/images/nis-hero.png",
+    coverImagePosition: input.coverImagePosition || "center bottom",
     contentHtml: sanitizeHtml(input.contentHtml),
     published: input.published,
     createdAt: now,
@@ -151,6 +154,7 @@ export async function updateRecommendation(
     description: input.description.trim(),
     category: normalizeCategory(input.category, categoryOptions),
     coverImage: input.coverImage.trim() || "/images/nis-hero.png",
+    coverImagePosition: input.coverImagePosition || "center bottom",
     contentHtml: sanitizeHtml(input.contentHtml),
     published: input.published,
     updatedAt: new Date().toISOString(),

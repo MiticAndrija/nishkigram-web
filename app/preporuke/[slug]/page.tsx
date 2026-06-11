@@ -70,6 +70,10 @@ export default async function RecommendationPage({
                 fill
                 sizes="100vw"
                 className="object-cover object-bottom"
+                style={{
+                  objectPosition:
+                    recommendation.coverImagePosition || "center bottom",
+                }}
                 priority
                 unoptimized={
                   recommendation.coverImage.startsWith("/images/") ||

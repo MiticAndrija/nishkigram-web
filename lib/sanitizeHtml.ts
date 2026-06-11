@@ -9,6 +9,7 @@ const allowedTags = new Set([
   "li",
   "a",
   "img",
+  "iframe",
   "br",
 ]);
 
@@ -31,6 +32,25 @@ function cleanUrl(value: string) {
 function getAttribute(attributes: string, name: string) {
   const pattern = new RegExp(`${name}\\s*=\\s*["']([^"']*)["']`, "i");
   return attributes.match(pattern)?.[1] ?? "";
+}
+
+function cleanYoutubeEmbedUrl(value: string) {
+  const trimmed = value.trim();
+  const patterns = [
+    /(?:https?:\/\/)?(?:www\.)?youtube\.com\/watch\?v=([A-Za-z0-9_-]{6,})/,
+    /(?:https?:\/\/)?youtu\.be\/([A-Za-z0-9_-]{6,})/,
+    /(?:https?:\/\/)?(?:www\.)?youtube\.com\/embed\/([A-Za-z0-9_-]{6,})/,
+  ];
+
+  for (const pattern of patterns) {
+    const videoId = trimmed.match(pattern)?.[1];
+
+    if (videoId) {
+      return `https://www.youtube.com/embed/${videoId}`;
+    }
+  }
+
+  return "";
 }
 
 export function sanitizeHtml(input: string) {
@@ -61,6 +81,17 @@ export function sanitizeHtml(input: string) {
         const src = cleanUrl(getAttribute(attributes, "src"));
         const alt = getAttribute(attributes, "alt").replace(/"/g, "&quot;");
         return src ? `<img src="${src}" alt="${alt}" />` : "";
+      }
+
+      if (tag === "iframe") {
+        const src = cleanYoutubeEmbedUrl(getAttribute(attributes, "src"));
+        const title =
+          getAttribute(attributes, "title").replace(/"/g, "&quot;") ||
+          "YouTube video";
+
+        return src
+          ? `<iframe src="${src}" title="${title}" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen>`
+          : "";
       }
 
       return tag === "br" ? "<br />" : `<${tag}>`;

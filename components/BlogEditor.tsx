@@ -1,6 +1,10 @@
 "use client";
 
-import { ChangeEvent, useEffect, useRef, useState } from "react";
+import { ChangeEvent, useEffect, useId, useRef, useState } from "react";
+import {
+  adminImageAccept,
+  uploadAdminImage,
+} from "@/lib/adminImageUploadClient";
 
 type BlogEditorProps = {
   value: string;
@@ -19,24 +23,16 @@ const toolbarButtons = [
   { label: "OL", title: "Numbered list", command: "insertOrderedList" },
 ];
 
-const maxUploadSizeBytes = 5 * 1024 * 1024;
-const imageAccept = ".jpg,.jpeg,.png,.webp";
-
-type UploadResponse = {
-  upload?: {
-    url: string;
-  };
-  error?: string;
-};
-
 export default function BlogEditor({
   value,
   onChange,
   uploadEndpoint = "/api/admin/blog/upload",
   ariaLabel = "Sadržaj blog objave",
 }: BlogEditorProps) {
+  const uploadInputId = useId();
   const editorRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const savedRangeRef = useRef<Range | null>(null);
   const [uploadStatus, setUploadStatus] = useState<
     "idle" | "uploading" | "success" | "error"
   >("idle");
@@ -48,10 +44,63 @@ export default function BlogEditor({
     }
   }, [value]);
 
-  const runCommand = (command: string, commandValue?: string) => {
-    document.execCommand(command, false, commandValue);
+  const saveSelection = () => {
+    const selection = window.getSelection();
+    const editor = editorRef.current;
+
+    if (!selection?.rangeCount || !editor) {
+      return;
+    }
+
+    const range = selection.getRangeAt(0);
+
+    if (editor.contains(range.commonAncestorContainer)) {
+      savedRangeRef.current = range.cloneRange();
+    }
+  };
+
+  const restoreSelection = () => {
+    const selection = window.getSelection();
+    const range = savedRangeRef.current;
+
+    if (!selection || !range) {
+      return false;
+    }
+
+    selection.removeAllRanges();
+    selection.addRange(range);
+    return true;
+  };
+
+  const syncEditorValue = () => {
     onChange(editorRef.current?.innerHTML ?? "");
+  };
+
+  const insertHtml = (html: string) => {
+    const editor = editorRef.current;
+
+    if (!editor) {
+      return;
+    }
+
+    editor.focus();
+
+    if (restoreSelection()) {
+      document.execCommand("insertHTML", false, html);
+    } else {
+      editor.insertAdjacentHTML("beforeend", html);
+    }
+
+    syncEditorValue();
+    saveSelection();
+  };
+
+  const runCommand = (command: string, commandValue?: string) => {
     editorRef.current?.focus();
+    restoreSelection();
+    document.execCommand(command, false, commandValue);
+    syncEditorValue();
+    saveSelection();
   };
 
   const addLink = () => {
@@ -66,8 +115,31 @@ export default function BlogEditor({
     const src = window.prompt("Unesite URL slike");
 
     if (src) {
-      runCommand("insertImage", src);
+      insertHtml(`<img src="${src.replace(/"/g, "&quot;")}" alt="" />`);
     }
+  };
+
+  const addYoutube = () => {
+    const url = window.prompt("Unesite YouTube link");
+
+    if (!url) {
+      return;
+    }
+
+    const videoId =
+      url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([A-Za-z0-9_-]{6,})/)?.[1] ??
+      url.match(/youtube\.com\/embed\/([A-Za-z0-9_-]{6,})/)?.[1] ??
+      "";
+
+    if (!videoId) {
+      setUploadStatus("error");
+      setUploadMessage("YouTube link nije ispravan.");
+      return;
+    }
+
+    insertHtml(
+      `<iframe src="https://www.youtube.com/embed/${videoId}" title="YouTube video" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>`,
+    );
   };
 
   const uploadImage = async (event: ChangeEvent<HTMLInputElement>) => {
@@ -80,33 +152,24 @@ export default function BlogEditor({
     setUploadStatus("uploading");
     setUploadMessage("");
 
-    if (file.size > maxUploadSizeBytes) {
+    try {
+      const uploadedImage = await uploadAdminImage(file, uploadEndpoint, (percentage) =>
+        setUploadMessage(`Uploadujem sliku... ${Math.round(percentage)}%`),
+      );
+
+      insertHtml(
+        `<img src="${uploadedImage.url.replace(/"/g, "&quot;")}" alt="" />`,
+      );
+      setUploadStatus("success");
+      setUploadMessage("Slika je ubačena u tekst.");
+    } catch (error) {
       setUploadStatus("error");
-      setUploadMessage("Slika moze biti velika najvise 5 MB.");
+      setUploadMessage(
+        error instanceof Error ? error.message : "Upload slike nije uspeo.",
+      );
+    } finally {
       event.target.value = "";
-      return;
     }
-
-    const formData = new FormData();
-    formData.append("image", file);
-
-    const response = await fetch(uploadEndpoint, {
-      method: "POST",
-      body: formData,
-    });
-    const payload = (await response.json()) as UploadResponse;
-
-    if (!response.ok || !payload.upload?.url) {
-      setUploadStatus("error");
-      setUploadMessage(payload.error || "Upload slike nije uspeo.");
-      event.target.value = "";
-      return;
-    }
-
-    runCommand("insertImage", payload.upload.url);
-    setUploadStatus("success");
-    setUploadMessage("Slika je ubacena u tekst.");
-    event.target.value = "";
   };
 
   return (
@@ -117,6 +180,7 @@ export default function BlogEditor({
             key={`${button.command}-${button.value ?? button.label}`}
             type="button"
             title={button.title}
+            onMouseDown={saveSelection}
             onClick={() => runCommand(button.command, button.value)}
             className="h-9 min-w-9 rounded-md border border-[#5c4a3d]/15 px-3 text-sm font-semibold text-[#5c4a3d] transition-colors hover:bg-[#5c4a3d]/8"
           >
@@ -125,6 +189,7 @@ export default function BlogEditor({
         ))}
         <button
           type="button"
+          onMouseDown={saveSelection}
           onClick={addLink}
           className="h-9 rounded-md border border-[#5c4a3d]/15 px-3 text-sm font-semibold text-[#5c4a3d] transition-colors hover:bg-[#5c4a3d]/8"
         >
@@ -132,21 +197,31 @@ export default function BlogEditor({
         </button>
         <button
           type="button"
+          onMouseDown={saveSelection}
           onClick={addImage}
           className="h-9 rounded-md border border-[#5c4a3d]/15 px-3 text-sm font-semibold text-[#5c4a3d] transition-colors hover:bg-[#5c4a3d]/8"
         >
           URL slika
         </button>
+        <button
+          type="button"
+          onMouseDown={saveSelection}
+          onClick={addYoutube}
+          className="h-9 rounded-md border border-[#5c4a3d]/15 px-3 text-sm font-semibold text-[#5c4a3d] transition-colors hover:bg-[#5c4a3d]/8"
+        >
+          YouTube
+        </button>
         <input
           ref={fileInputRef}
           type="file"
-          accept={imageAccept}
+          accept={adminImageAccept}
           onChange={uploadImage}
           className="sr-only"
-          id="content-image-upload"
+          id={uploadInputId}
         />
         <label
-          htmlFor="content-image-upload"
+          htmlFor={uploadInputId}
+          onMouseDown={saveSelection}
           className="flex h-9 cursor-pointer items-center rounded-md border border-[#5c4a3d]/15 px-3 text-sm font-semibold text-[#5c4a3d] transition-colors hover:bg-[#5c4a3d]/8"
         >
           Upload slika
@@ -158,7 +233,9 @@ export default function BlogEditor({
             uploadStatus === "error" ? "text-red-700" : "text-[#5c4a3d]"
           }`}
         >
-          {uploadStatus === "uploading" ? "Uploadujem sliku..." : uploadMessage}
+          {uploadStatus === "uploading"
+            ? uploadMessage || "Uploadujem sliku..."
+            : uploadMessage}
         </p>
       ) : null}
       <div
@@ -166,8 +243,14 @@ export default function BlogEditor({
         contentEditable
         role="textbox"
         aria-label={ariaLabel}
-        onInput={(event) => onChange(event.currentTarget.innerHTML)}
-        className="min-h-80 px-5 py-4 leading-8 text-[#4a382b] outline-none [&_a]:font-semibold [&_a]:text-[#5c4a3d] [&_h2]:font-serif [&_h2]:text-3xl [&_h3]:font-serif [&_h3]:text-2xl [&_img]:my-5 [&_img]:max-h-96 [&_img]:rounded-xl [&_img]:object-cover [&_li]:ml-6 [&_ol]:list-decimal [&_p]:mb-4 [&_strong]:font-bold [&_ul]:list-disc"
+        onInput={(event) => {
+          onChange(event.currentTarget.innerHTML);
+          saveSelection();
+        }}
+        onKeyUp={saveSelection}
+        onMouseUp={saveSelection}
+        onBlur={saveSelection}
+        className="min-h-80 px-5 py-4 leading-8 text-[#4a382b] outline-none [&_a]:font-semibold [&_a]:text-[#5c4a3d] [&_h2]:font-serif [&_h2]:text-3xl [&_h3]:font-serif [&_h3]:text-2xl [&_iframe]:my-5 [&_iframe]:aspect-video [&_iframe]:h-auto [&_iframe]:w-full [&_iframe]:rounded-xl [&_img]:my-5 [&_img]:max-h-96 [&_img]:rounded-xl [&_img]:object-cover [&_li]:ml-6 [&_ol]:list-decimal [&_p]:mb-4 [&_strong]:font-bold [&_ul]:list-disc"
         suppressContentEditableWarning
       />
     </div>

@@ -35,6 +35,12 @@ export default async function AdminBlogPage() {
               >
                 Admin preporuke
               </Link>
+              <Link
+                href="/admin/uploads"
+                className="rounded-full border border-[#5c4a3d]/20 px-4 py-2 text-sm font-semibold text-[#5c4a3d] transition-colors hover:bg-[#5c4a3d]/8"
+              >
+                Admin media
+              </Link>
             </div>
             <p className="mb-4 text-sm font-semibold uppercase tracking-[0.22em] text-[#8b6f56]">
               Admin blog

@@ -25,6 +25,7 @@ export default function BlogCard({ post }: { post: BlogPost }) {
           fill
           sizes="(min-width: 768px) 33vw, 100vw"
           className="object-cover object-bottom transition-transform duration-500 group-hover:scale-105"
+          style={{ objectPosition: post.coverImagePosition || "center bottom" }}
           unoptimized={
             post.coverImage.startsWith("/images/") ||
             post.coverImage.startsWith("/uploads/blog/")

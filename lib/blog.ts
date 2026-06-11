@@ -13,6 +13,7 @@ export type BlogPost = {
   category?: string;
   tags?: string[];
   coverImage: string;
+  coverImagePosition?: string;
   contentHtml: string;
   published: boolean;
   createdAt: string;
@@ -27,6 +28,7 @@ export type BlogPostInput = {
   category?: string;
   tags?: string[];
   coverImage: string;
+  coverImagePosition?: string;
   contentHtml: string;
   published: boolean;
 };
@@ -101,6 +103,7 @@ export async function createPost(input: BlogPostInput) {
     category: normalizeCategory(input.category, categories),
     tags: normalizeTags(input.tags),
     coverImage: input.coverImage.trim() || "/images/nis-hero.png",
+    coverImagePosition: input.coverImagePosition || "center bottom",
     contentHtml: sanitizeHtml(input.contentHtml),
     published: input.published,
     createdAt: now,
@@ -134,6 +137,7 @@ export async function updatePost(id: string, input: BlogPostInput) {
     category: normalizeCategory(input.category, categoryOptions),
     tags: normalizeTags(input.tags),
     coverImage: input.coverImage.trim() || "/images/nis-hero.png",
+    coverImagePosition: input.coverImagePosition || "center bottom",
     contentHtml: sanitizeHtml(input.contentHtml),
     published: input.published,
     updatedAt: new Date().toISOString(),

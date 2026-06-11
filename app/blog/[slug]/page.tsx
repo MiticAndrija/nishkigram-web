@@ -80,6 +80,9 @@ export default async function BlogPostPage({
                 fill
                 sizes="100vw"
                 className="object-cover object-bottom"
+                style={{
+                  objectPosition: post.coverImagePosition || "center bottom",
+                }}
                 priority
                 unoptimized={
                   post.coverImage.startsWith("/images/") ||

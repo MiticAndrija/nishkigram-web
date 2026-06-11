@@ -87,12 +87,12 @@ export default function RecommendationSearch({
           </div>
           <div className="flex flex-col gap-3 md:flex-row md:items-center">
             <label className="flex-1">
-              <span className="sr-only">Pretrazi preporuke</span>
+              <span className="sr-only">Pretraži preporuke</span>
               <input
                 type="search"
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
-                placeholder="Pretrazi preporuke..."
+                placeholder="Pretraži preporuke..."
                 className="w-full rounded-lg border border-[#5c4a3d]/20 bg-[#f4efe6] px-4 py-3 text-[#4a382b] outline-none transition-shadow placeholder:text-[#5c4a3d]/45 focus:ring-4 focus:ring-[#5c4a3d]/15"
               />
             </label>
@@ -107,7 +107,7 @@ export default function RecommendationSearch({
                   onClick={() => setQuery("")}
                   className="rounded-lg border border-[#5c4a3d]/25 px-4 py-2 text-sm font-semibold text-[#5c4a3d] transition-colors hover:bg-[#5c4a3d]/8"
                 >
-                  Ocisti
+                  Očisti
                 </button>
               ) : null}
             </div>
@@ -127,10 +127,10 @@ export default function RecommendationSearch({
       ) : (
         <div className="mt-8 rounded-[1.5rem] border border-[#5c4a3d]/10 bg-[#fdfaf6] p-10 text-center">
           <h2 className="font-serif text-3xl text-[#4a382b]">
-            Nema pronadjenih preporuka.
+            Nema pronađenih preporuka.
           </h2>
           <p className="mx-auto mt-4 max-w-xl leading-7 text-[#5c4a3d]/75">
-            Probajte drugu rec, kategoriju ili deo teksta koji trazite.
+            Probajte drugu reč, kategoriju ili deo teksta koji tražite.
           </p>
         </div>
       )}

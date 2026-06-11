@@ -29,6 +29,10 @@ export default function RecommendationCard({
           fill
           sizes="(min-width: 768px) 33vw, 100vw"
           className="object-cover object-bottom transition-transform duration-500 group-hover:scale-105"
+          style={{
+            objectPosition:
+              recommendation.coverImagePosition || "center bottom",
+          }}
           unoptimized={
             recommendation.coverImage.startsWith("/images/") ||
             recommendation.coverImage.startsWith("/uploads/blog/")

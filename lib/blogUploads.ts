@@ -1,15 +1,23 @@
 import { promises as fs } from "node:fs";
 import path from "node:path";
-import { put, del } from "@vercel/blob";
+import { put, del, list } from "@vercel/blob";
 
 type UploadedImageReference = {
   coverImage?: string;
   contentHtml?: string;
 };
 
+export type UploadedBlogImage = {
+  url: string;
+  filename: string;
+  source: "local" | "blob";
+  size?: number;
+  uploadedAt?: string;
+};
+
 const uploadPublicPath = "/uploads/blog/";
 const uploadDirectory = path.join(process.cwd(), "public", "uploads", "blog");
-const maxUploadSizeBytes = 5 * 1024 * 1024;
+const maxUploadSizeBytes = 50 * 1024 * 1024;
 
 const mimeExtensions = new Map([
   ["image/jpeg", "jpg"],
@@ -67,6 +75,90 @@ function getUploadFilenameFromUrl(imageUrl: string) {
   return filename;
 }
 
+async function listLocalBlogUploads() {
+  if (process.env.VERCEL) {
+    return [];
+  }
+
+  try {
+    const entries = await fs.readdir(uploadDirectory, { withFileTypes: true });
+    const files = await Promise.all(
+      entries
+        .filter((entry) => entry.isFile())
+        .map(async (entry): Promise<UploadedBlogImage | null> => {
+          const extension = getOriginalExtension(entry.name);
+
+          if (!allowedExtensions.has(extension)) {
+            return null;
+          }
+
+          const stats = await fs.stat(path.join(uploadDirectory, entry.name));
+          return {
+            url: `${uploadPublicPath}${entry.name}`,
+            filename: entry.name,
+            source: "local",
+            size: stats.size,
+            uploadedAt: stats.birthtime.toISOString(),
+          };
+        }),
+    );
+
+    return files.filter((file): file is UploadedBlogImage => Boolean(file));
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === "ENOENT") {
+      return [];
+    }
+
+    throw error;
+  }
+}
+
+async function listBlobBlogUploads() {
+  if (!process.env.BLOB_READ_WRITE_TOKEN) {
+    return [];
+  }
+
+  const uploads: UploadedBlogImage[] = [];
+  let cursor: string | undefined;
+
+  do {
+    const result = await list({
+      prefix: "uploads/blog/",
+      limit: 1000,
+      cursor,
+      token: process.env.BLOB_READ_WRITE_TOKEN,
+    });
+
+    uploads.push(
+      ...result.blobs
+        .filter((blob) => allowedExtensions.has(getOriginalExtension(blob.pathname)))
+        .map((blob) => ({
+          url: blob.url,
+          filename: blob.pathname,
+          source: "blob" as const,
+          size: blob.size,
+          uploadedAt: blob.uploadedAt.toISOString(),
+        })),
+    );
+    cursor = result.cursor;
+  } while (cursor);
+
+  return uploads;
+}
+
+export async function listUploadedBlogImages() {
+  const [localUploads, blobUploads] = await Promise.all([
+    listLocalBlogUploads(),
+    listBlobBlogUploads(),
+  ]);
+
+  return [...localUploads, ...blobUploads].sort((a, b) => {
+    const aTime = a.uploadedAt ? new Date(a.uploadedAt).getTime() : 0;
+    const bTime = b.uploadedAt ? new Date(b.uploadedAt).getTime() : 0;
+    return bTime - aTime;
+  });
+}
+
 export function validateBlogImageUpload(file: File) {
   const mimeExtension = mimeExtensions.get(file.type);
   const originalExtension = getOriginalExtension(file.name);
@@ -80,7 +172,7 @@ export function validateBlogImageUpload(file: File) {
   }
 
   if (file.size > maxUploadSizeBytes) {
-    return "Slika moze biti velika najvise 5 MB.";
+    return "Slika moze biti velika najvise 50 MB.";
   }
 
   return "";
@@ -108,6 +200,12 @@ export async function saveBlogImageUpload(file: File) {
       filename: blob.pathname,
       size: file.size,
     };
+  }
+
+  if (process.env.VERCEL) {
+    throw new Error(
+      "Upload slika na Vercel-u zahteva BLOB_READ_WRITE_TOKEN. Podesite Vercel Blob storage za produkciju.",
+    );
   }
 
   // Fallback to local filesystem upload

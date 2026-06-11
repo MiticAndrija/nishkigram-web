@@ -6,9 +6,9 @@ import { getPublishedRecommendations } from "@/lib/recommendations";
 export const dynamic = "force-dynamic";
 
 export const metadata = {
-  title: "Preporuke - Niskigram",
+  title: "Preporuke - Niškigram",
   description:
-    "Niskigram preporuke: kafici, restorani, barovi i aktivnosti u Nisu. Otkrijte proverena lokalna mesta.",
+    "Niškigram preporuke: kafići, restorani, barovi i aktivnosti u Nišu. Otkrijte proverena lokalna mesta.",
 };
 
 export default async function PreporukePage() {
@@ -23,13 +23,13 @@ export default async function PreporukePage() {
           <div className="mx-auto max-w-6xl">
             <div className="max-w-3xl">
               <p className="mb-5 text-sm font-semibold uppercase tracking-[0.24em] text-[#8b6f56]">
-                Niskigram preporuke
+                Niškigram preporučuje
               </p>
               <h1 className="font-serif text-5xl leading-tight text-[#4a382b] md:text-7xl">
                 Proverena mesta koja volimo.
               </h1>
               <p className="mt-8 max-w-2xl text-xl leading-9 text-[#5c4a3d]/80">
-                Biramo lokale, usluge i iskustva u Nisu koja vredi posetiti.
+                Biramo lokale, usluge i iskustva u Nišu koja vredi posetiti.
                 Javna strana prikazuje preporuke koje su objavljene iz admin
                 panela.
               </p>
@@ -43,10 +43,10 @@ export default async function PreporukePage() {
             ) : (
               <div className="mt-12 rounded-[1.5rem] border border-[#5c4a3d]/10 bg-[#fdfaf6] p-10 text-center">
                 <h2 className="font-serif text-3xl text-[#4a382b]">
-                  Jos nema objavljenih preporuka.
+                  Još nema objavljenih preporuka.
                 </h2>
                 <p className="mx-auto mt-4 max-w-xl leading-7 text-[#5c4a3d]/75">
-                  Kada admin objavi prvu preporuku, pojavice se ovde kao javna
+                  Kada admin objavi prvu preporuku, pojaviće se ovde kao javna
                   kartica sa slikom, kategorijom i opisom.
                 </p>
               </div>
