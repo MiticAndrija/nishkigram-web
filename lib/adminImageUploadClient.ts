@@ -1,6 +1,6 @@
 "use client";
 
-import { upload } from "@vercel/blob/client";
+import { uploadPresigned } from "@vercel/blob/client";
 
 export const maxAdminImageUploadSizeBytes = 50 * 1024 * 1024;
 export const adminImageAccept = ".jpg,.jpeg,.png,.webp";
@@ -91,7 +91,7 @@ export async function uploadAdminImage(
   )}.${getExtension(file)}`;
 
   try {
-    const blob = await upload(pathname, file, {
+    const blob = await uploadPresigned(pathname, file, {
       access: "public",
       handleUploadUrl: endpoint,
       multipart: file.size > 4 * 1024 * 1024,

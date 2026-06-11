@@ -114,7 +114,11 @@ async function listLocalBlogUploads() {
 }
 
 async function listBlobBlogUploads() {
-  if (!process.env.BLOB_READ_WRITE_TOKEN) {
+  if (
+    !process.env.BLOB_READ_WRITE_TOKEN &&
+    !process.env.BLOB_STORE_ID &&
+    !process.env.VERCEL
+  ) {
     return [];
   }
 
@@ -126,7 +130,6 @@ async function listBlobBlogUploads() {
       prefix: "uploads/blog/",
       limit: 1000,
       cursor,
-      token: process.env.BLOB_READ_WRITE_TOKEN,
     });
 
     uploads.push(
@@ -189,23 +192,19 @@ export async function saveBlogImageUpload(file: File) {
   const safeBaseName = sanitizeBaseName(file.name);
   const filename = `${Date.now()}-${crypto.randomUUID()}-${safeBaseName}.${extension}`;
 
-  // If Vercel Blob token is configured, upload to Vercel Blob
-  if (process.env.BLOB_READ_WRITE_TOKEN) {
+  if (
+    process.env.BLOB_READ_WRITE_TOKEN ||
+    process.env.BLOB_STORE_ID ||
+    process.env.VERCEL
+  ) {
     const blob = await put(`uploads/blog/${filename}`, file, {
       access: "public",
-      token: process.env.BLOB_READ_WRITE_TOKEN,
     });
     return {
       url: blob.url,
       filename: blob.pathname,
       size: file.size,
     };
-  }
-
-  if (process.env.VERCEL) {
-    throw new Error(
-      "Upload slika na Vercel-u zahteva BLOB_READ_WRITE_TOKEN. Podesite Vercel Blob storage za produkciju.",
-    );
   }
 
   // Fallback to local filesystem upload
@@ -256,11 +255,13 @@ export function getBlogUploadUrls(reference: UploadedImageReference) {
 export async function removeUploadedBlogImage(imageUrl: string) {
   // If Vercel Blob URL, delete from Vercel Blob storage
   if (
-    process.env.BLOB_READ_WRITE_TOKEN &&
+    (process.env.BLOB_READ_WRITE_TOKEN ||
+      process.env.BLOB_STORE_ID ||
+      process.env.VERCEL) &&
     imageUrl.includes(".public.blob.vercel-storage.com")
   ) {
     try {
-      await del(imageUrl, { token: process.env.BLOB_READ_WRITE_TOKEN });
+      await del(imageUrl);
       return true;
     } catch (error) {
       console.warn("Failed to delete Vercel Blob image:", imageUrl, error);

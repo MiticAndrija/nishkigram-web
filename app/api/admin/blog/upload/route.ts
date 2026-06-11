@@ -1,5 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { handleUpload, type HandleUploadBody } from "@vercel/blob/client";
+import { issueSignedToken } from "@vercel/blob";
+import {
+  handleUploadPresigned,
+  type HandleUploadPresignedBody,
+} from "@vercel/blob/client";
 import { adminCookieName, verifyAdminSession } from "@/lib/adminAuth";
 import { blogImageUploadConfig, saveBlogImageUpload } from "@/lib/blogUploads";
 
@@ -13,25 +17,35 @@ const allowedContentTypes = ["image/jpeg", "image/png", "image/webp"];
 
 export async function POST(request: NextRequest) {
   if (request.headers.get("content-type")?.includes("application/json")) {
-    const body = (await request.json()) as HandleUploadBody;
+    const body = (await request.json()) as HandleUploadPresignedBody;
 
-    if (body.type === "blob.generate-client-token" && !isAuthorized(request)) {
+    if (body.type === "blob.generate-presigned-url" && !isAuthorized(request)) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     try {
-      const response = await handleUpload({
+      const response = await handleUploadPresigned({
         body,
         request,
-        onBeforeGenerateToken: async (pathname) => {
+        getSignedToken: async (pathname) => {
           if (!pathname.startsWith("uploads/blog/")) {
             throw new Error("Invalid upload path.");
           }
 
           return {
-            allowedContentTypes,
-            maximumSizeInBytes: blogImageUploadConfig.maxUploadSizeBytes,
-            addRandomSuffix: true,
+            token: await issueSignedToken({
+              pathname,
+              operations: ["put"],
+              allowedContentTypes,
+              maximumSizeInBytes: blogImageUploadConfig.maxUploadSizeBytes,
+              validUntil: Date.now() + 60 * 60 * 1000,
+            }),
+            urlOptions: {
+              access: "public",
+              allowedContentTypes,
+              maximumSizeInBytes: blogImageUploadConfig.maxUploadSizeBytes,
+              addRandomSuffix: true,
+            },
           };
         },
         onUploadCompleted: async () => undefined,
