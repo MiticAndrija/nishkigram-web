@@ -1,1 +1,17 @@
-[]
+[
+  {
+    "id": "f4a94914-1f25-4cdd-a3ef-e6361ce927df",
+    "title": "fbfgfgfgh",
+    "slug": "f",
+    "excerpt": "efgfdgdg",
+    "author": "Niškigram",
+    "category": "",
+    "tags": [],
+    "coverImage": "/images/nis-hero.png",
+    "coverImagePosition": "67% 100%",
+    "contentHtml": "gfdfghgdhvbf<p></p>",
+    "published": true,
+    "createdAt": "2026-06-12T10:04:56.171Z",
+    "updatedAt": "2026-06-12T10:04:56.171Z"
+  }
+]
