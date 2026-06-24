@@ -1,1 +1,15 @@
-[]
+[
+  {
+    "id": "8d85b7dd-0a34-4bfe-8156-9351bd437757",
+    "title": "taedfas",
+    "slug": "t",
+    "description": "test",
+    "category": "Restorani",
+    "coverImage": "/images/nis-hero.png",
+    "coverImagePosition": "45% 0%",
+    "contentHtml": "21<p></p><br /><iframe src=\"https://www.youtube.com/embed/zvaO4DPM1ZM\" title=\"YouTube video\" loading=\"lazy\" allow=\"accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share\" allowfullscreen></iframe>",
+    "published": true,
+    "createdAt": "2026-06-24T11:06:00.702Z",
+    "updatedAt": "2026-06-24T11:06:00.702Z"
+  }
+]
