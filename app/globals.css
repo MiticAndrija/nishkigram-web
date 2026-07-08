@@ -20,6 +20,21 @@ body {
   overflow-x: hidden;
 }
 
+* {
+  box-sizing: border-box;
+}
+
+img,
+video,
+canvas,
+svg {
+  max-width: 100%;
+}
+
+.blog-post-content {
+  overflow-wrap: anywhere;
+}
+
 .blog-post-content h2 {
   margin-top: 2.5rem;
   margin-bottom: 1rem;

@@ -39,7 +39,7 @@ export default async function BlogPostPage({
       <Navbar />
       <main className="pt-24">
         <article>
-          <header className="px-6 pb-12 pt-14 md:px-10">
+          <header className="px-4 pb-10 pt-12 sm:px-6 md:px-10 md:pt-14">
             <div className="mx-auto max-w-4xl text-center">
               <Link
                 href="/blog"
@@ -47,7 +47,7 @@ export default async function BlogPostPage({
               >
                 Blog
               </Link>
-              <h1 className="mt-6 font-serif text-5xl leading-tight text-[#4a382b] md:text-7xl">
+              <h1 className="mt-6 font-serif text-4xl leading-tight text-[#4a382b] sm:text-5xl md:text-7xl">
                 {post.title}
               </h1>
               <div className="mt-6 flex flex-wrap justify-center gap-3 text-sm font-semibold text-[#5c4a3d]/65">
@@ -72,14 +72,14 @@ export default async function BlogPostPage({
                   ))}
                 </div>
               ) : null}
-              <p className="mx-auto mt-8 max-w-2xl text-xl leading-9 text-[#5c4a3d]/80">
+              <p className="mx-auto mt-6 max-w-2xl text-lg leading-8 text-[#5c4a3d]/80 sm:mt-8 sm:text-xl sm:leading-9">
                 {post.excerpt}
               </p>
             </div>
           </header>
 
-          <div className="px-6 md:px-10">
-            <div className="relative mx-auto h-[420px] max-w-6xl overflow-hidden rounded-[2rem] bg-[#e8e0d5] shadow-2xl">
+          <div className="px-4 sm:px-6 md:px-10">
+            <div className="relative mx-auto h-72 max-w-6xl overflow-hidden rounded-3xl bg-[#e8e0d5] shadow-2xl sm:h-[420px] sm:rounded-[2rem]">
               <Image
                 src={coverImage}
                 alt={post.title}
@@ -95,7 +95,7 @@ export default async function BlogPostPage({
             </div>
           </div>
 
-          <section className="px-6 py-16 md:px-10 md:py-24">
+          <section className="px-4 py-12 sm:px-6 md:px-10 md:py-24">
             <BlogPostContent html={post.contentHtml} />
           </section>
         </article>

@@ -26,9 +26,9 @@ export default function RecommendationCard({
   return (
     <Link
       href={`/preporuke/${recommendation.slug}`}
-      className="group overflow-hidden rounded-[1.5rem] border border-[#5c4a3d]/10 bg-[#fdfaf6] shadow-sm transition-all hover:-translate-y-1 hover:shadow-xl"
+      className="group min-w-0 overflow-hidden rounded-[1.25rem] border border-[#5c4a3d]/10 bg-[#fdfaf6] shadow-sm transition-all hover:-translate-y-1 hover:shadow-xl sm:rounded-[1.5rem]"
     >
-      <div className="relative h-64 bg-[#e8e0d5]">
+      <div className="relative h-52 bg-[#e8e0d5] sm:h-64">
         <Image
           src={coverImage}
           alt={recommendation.title}
@@ -42,7 +42,7 @@ export default function RecommendationCard({
           unoptimized={shouldUseUnoptimizedImage(coverImage)}
         />
       </div>
-      <div className="p-7">
+      <div className="p-5 sm:p-7">
         {recommendation.category ? (
           <div className="mb-4 flex flex-wrap gap-2">
             <span className="rounded-full bg-[#5c4a3d] px-3 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-[#fdfaf6]">
@@ -55,7 +55,7 @@ export default function RecommendationCard({
             {formatDate(recommendation.createdAt)}
           </time>
         </div>
-        <h2 className="font-serif text-3xl leading-tight text-[#4a382b]">
+        <h2 className="font-serif text-2xl leading-tight text-[#4a382b] sm:text-3xl">
           {recommendation.title}
         </h2>
         <p className="mt-4 leading-7 text-[#5c4a3d]/75">

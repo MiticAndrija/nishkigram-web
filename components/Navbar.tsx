@@ -33,10 +33,20 @@ const searchItems = [
 
 export default function Navbar() {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [query, setQuery] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
   const pathname = usePathname();
   const isAboutPage = pathname === "/o-nama";
+
+  const navItems = [
+    {
+      href: isAboutPage ? "/" : "/o-nama",
+      label: isAboutPage ? "Početna" : "O nama",
+    },
+    { href: "/blog", label: "Blog" },
+    { href: "/preporuke", label: "Preporuke" },
+  ];
 
   useEffect(() => {
     if (!isSearchOpen) {
@@ -54,6 +64,21 @@ export default function Navbar() {
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [isSearchOpen]);
+
+  useEffect(() => {
+    if (!isMenuOpen) {
+      return;
+    }
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setIsMenuOpen(false);
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isMenuOpen]);
 
   const results = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
@@ -79,61 +104,123 @@ export default function Navbar() {
   };
 
   return (
-    <nav className="fixed top-0 z-50 grid w-full grid-cols-[1fr_auto_1fr] items-center px-8 py-4 bg-[#fdfaf6]/80 backdrop-blur-md text-[#5c4a3d]">
-      <Link
-        href="/"
-        aria-label="Niškigram početna"
-        className="flex items-center gap-3 justify-self-start hover:opacity-80 transition-opacity"
-      >
-        {/* Placeholder for the logo icon */}
-        <div className="flex items-center justify-center w-10 h-10">
-          <svg className="w-8 h-8 fill-current" viewBox="0 0 24 24">
-            <path d="M12 2L8 10H16L12 2Z M8 10V22H16V10Z" />
-          </svg>
-        </div>
-        <span className="text-2xl font-serif font-bold">Niškigram</span>
-      </Link>
-      <div className="hidden md:flex items-center gap-8 font-medium justify-self-center">
+    <nav className="fixed top-0 z-50 w-full bg-[#fdfaf6]/90 px-4 py-3 text-[#5c4a3d] backdrop-blur-md md:grid md:grid-cols-[1fr_auto_1fr] md:items-center md:px-8 md:py-4">
+      <div className="flex min-w-0 items-center justify-between gap-3 md:contents">
         <Link
-          href={isAboutPage ? "/" : "/o-nama"}
-          className="hover:opacity-70 transition-opacity"
+          href="/"
+          aria-label="Niškigram početna"
+          className="flex min-w-0 items-center gap-2 justify-self-start transition-opacity hover:opacity-80 md:gap-3"
         >
-          {isAboutPage ? "Početna" : "O nama"}
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center">
+            <svg className="h-8 w-8 fill-current" viewBox="0 0 24 24">
+              <path d="M12 2L8 10H16L12 2Z M8 10V22H16V10Z" />
+            </svg>
+          </div>
+          <span className="truncate font-serif text-xl font-bold sm:text-2xl">
+            Niškigram
+          </span>
         </Link>
-        <Link href="/blog" className="hover:opacity-70 transition-opacity">
-          Blog
-        </Link>
-        <Link href="/preporuke" className="hover:opacity-70 transition-opacity">
-          Preporuke
-        </Link>
-      </div>
-      <div className="justify-self-end">
-        <button
-          type="button"
-          aria-label="Otvori pretragu"
-          onClick={() => setIsSearchOpen(true)}
-          className="flex h-11 w-11 items-center justify-center rounded-full border border-[#5c4a3d]/20 hover:bg-[#5c4a3d]/5 transition-colors"
-        >
-          <svg
-            className="w-5 h-5"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-            xmlns="http://www.w3.org/2000/svg"
+
+        <div className="hidden items-center gap-8 justify-self-center font-medium md:flex">
+          {navItems.map((item) => (
+            <Link
+              key={`${item.href}-${item.label}`}
+              href={item.href}
+              className="transition-opacity hover:opacity-70"
+            >
+              {item.label}
+            </Link>
+          ))}
+        </div>
+
+        <div className="flex shrink-0 items-center gap-2 justify-self-end">
+          <button
+            type="button"
+            aria-label="Otvori pretragu"
+            onClick={() => setIsSearchOpen(true)}
+            className="hidden h-11 w-11 items-center justify-center rounded-full border border-[#5c4a3d]/20 transition-colors hover:bg-[#5c4a3d]/5 md:flex"
           >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-            />
-          </svg>
-        </button>
+            <svg
+              className="h-5 w-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+              />
+            </svg>
+          </button>
+          <button
+            type="button"
+            aria-label={isMenuOpen ? "Zatvori meni" : "Otvori meni"}
+            aria-controls="mobile-navigation"
+            aria-expanded={isMenuOpen}
+            onClick={() => setIsMenuOpen((open) => !open)}
+            className="flex h-11 w-11 items-center justify-center rounded-full border border-[#5c4a3d]/20 transition-colors hover:bg-[#5c4a3d]/5 md:hidden"
+          >
+            <svg
+              className="h-5 w-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              {isMenuOpen ? (
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              ) : (
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M4 7h16M4 12h16M4 17h16"
+                />
+              )}
+            </svg>
+          </button>
+        </div>
       </div>
+
+      {isMenuOpen ? (
+        <div
+          id="mobile-navigation"
+          className="mt-3 rounded-2xl border border-[#5c4a3d]/10 bg-[#fdfaf6] p-2 shadow-xl md:hidden"
+        >
+          <button
+            type="button"
+            onClick={() => {
+              setIsMenuOpen(false);
+              setIsSearchOpen(true);
+            }}
+            className="flex min-h-11 w-full items-center rounded-xl px-4 py-3 text-left text-base font-semibold transition-colors hover:bg-[#5c4a3d]/8"
+          >
+            Pretraga
+          </button>
+          {navItems.map((item) => (
+            <Link
+              key={`mobile-${item.href}-${item.label}`}
+              href={item.href}
+              onClick={() => setIsMenuOpen(false)}
+              className="flex min-h-11 items-center rounded-xl px-4 py-3 text-base font-semibold transition-colors hover:bg-[#5c4a3d]/8"
+            >
+              {item.label}
+            </Link>
+          ))}
+        </div>
+      ) : null}
 
       {isSearchOpen ? (
         <div
-          className="fixed inset-0 z-[60] flex items-start justify-center bg-[#2f241d]/35 px-4 pt-24 backdrop-blur-sm"
+          className="fixed inset-0 z-[60] flex items-start justify-center bg-[#2f241d]/35 px-3 pt-20 backdrop-blur-sm sm:px-4 sm:pt-24"
           onMouseDown={() => setIsSearchOpen(false)}
         >
           <div
@@ -145,7 +232,7 @@ export default function Navbar() {
           >
             <form
               onSubmit={handleSubmit}
-              className="flex items-center gap-3 border-b border-[#5c4a3d]/10 px-5 py-4"
+              className="flex items-center gap-3 border-b border-[#5c4a3d]/10 px-4 py-4 sm:px-5"
             >
               <svg
                 className="h-5 w-5 shrink-0 text-[#5c4a3d]/70"
@@ -166,13 +253,13 @@ export default function Navbar() {
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
                 placeholder="Pretrazi Niskigram..."
-                className="min-w-0 flex-1 bg-transparent text-lg text-[#4a382b] outline-none placeholder:text-[#5c4a3d]/45"
+                className="min-w-0 flex-1 bg-transparent text-base text-[#4a382b] outline-none placeholder:text-[#5c4a3d]/45 sm:text-lg"
               />
               <button
                 type="button"
                 aria-label="Zatvori pretragu"
                 onClick={() => setIsSearchOpen(false)}
-                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full hover:bg-[#5c4a3d]/10 transition-colors"
+                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full transition-colors hover:bg-[#5c4a3d]/10"
               >
                 <svg
                   className="h-5 w-5"

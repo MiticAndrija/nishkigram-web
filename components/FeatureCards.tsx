@@ -30,36 +30,36 @@ const features = [
 
 export default function FeatureCards() {
   return (
-    <div className="w-full max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8 mb-24 px-4">
+    <div className="mx-auto mb-16 grid w-full max-w-5xl grid-cols-1 gap-5 px-4 md:mb-24 md:grid-cols-3 md:gap-8">
       {features.map((feature) => (
         <div
           key={feature.id}
           id={feature.id}
-          className="bg-[#fdfaf6] rounded-[2rem] overflow-hidden shadow-lg hover:shadow-xl transition-shadow border border-[#5c4a3d]/10 flex flex-col"
+          className="flex min-w-0 flex-col overflow-hidden rounded-3xl border border-[#5c4a3d]/10 bg-[#fdfaf6] shadow-lg transition-shadow hover:shadow-xl md:rounded-[2rem]"
         >
-          <div className="h-56 relative bg-[#e8e0d5] flex items-center justify-center p-8">
+          <div className="relative flex h-40 items-center justify-center bg-[#e8e0d5] p-6 sm:h-48 md:h-56 md:p-8">
             <Image
               src={feature.image}
               alt={feature.title}
               width={100}
               height={100}
-              className="opacity-50"
+              className="h-20 w-20 opacity-50 sm:h-24 sm:w-24"
             />
           </div>
-          <div className="p-8 flex flex-col flex-grow">
-            <h3 className="text-3xl font-serif text-[#5c4a3d] mb-3">
+          <div className="flex flex-grow flex-col p-6 md:p-8">
+            <h3 className="mb-3 font-serif text-2xl leading-tight text-[#5c4a3d] md:text-3xl">
               {feature.title}
             </h3>
-            <p className="text-[#5c4a3d]/80 mb-6 flex-grow text-lg">
+            <p className="mb-5 flex-grow text-base leading-7 text-[#5c4a3d]/80 md:mb-6 md:text-lg">
               {feature.description}
             </p>
             <Link
               href={feature.href}
-              className="text-[#5c4a3d] font-semibold hover:underline flex items-center gap-2"
+              className="flex min-h-11 items-center gap-2 font-semibold text-[#5c4a3d] hover:underline"
             >
-              {feature.linkText}
+              <span>{feature.linkText}</span>
               <svg
-                className="w-4 h-4"
+                className="h-4 w-4 shrink-0"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"

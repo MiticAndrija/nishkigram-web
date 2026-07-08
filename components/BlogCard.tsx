@@ -22,9 +22,9 @@ export default function BlogCard({ post }: { post: BlogPost }) {
   return (
     <Link
       href={`/blog/${post.slug}`}
-      className="group overflow-hidden rounded-[1.5rem] border border-[#5c4a3d]/10 bg-[#fdfaf6] shadow-sm transition-all hover:-translate-y-1 hover:shadow-xl"
+      className="group min-w-0 overflow-hidden rounded-[1.25rem] border border-[#5c4a3d]/10 bg-[#fdfaf6] shadow-sm transition-all hover:-translate-y-1 hover:shadow-xl sm:rounded-[1.5rem]"
     >
-      <div className="relative h-64 bg-[#e8e0d5]">
+      <div className="relative h-52 bg-[#e8e0d5] sm:h-64">
         <Image
           src={coverImage}
           alt={post.title}
@@ -35,7 +35,7 @@ export default function BlogCard({ post }: { post: BlogPost }) {
           unoptimized={shouldUseUnoptimizedImage(coverImage)}
         />
       </div>
-      <div className="p-7">
+      <div className="p-5 sm:p-7">
         {post.category || post.tags?.length ? (
           <div className="mb-4 flex flex-wrap gap-2">
             {post.category ? (
@@ -58,7 +58,7 @@ export default function BlogCard({ post }: { post: BlogPost }) {
           <span aria-hidden="true">/</span>
           <time dateTime={post.createdAt}>{formatDate(post.createdAt)}</time>
         </div>
-        <h2 className="font-serif text-3xl leading-tight text-[#4a382b]">
+        <h2 className="font-serif text-2xl leading-tight text-[#4a382b] sm:text-3xl">
           {post.title}
         </h2>
         <p className="mt-4 leading-7 text-[#5c4a3d]/75">{post.excerpt}</p>
